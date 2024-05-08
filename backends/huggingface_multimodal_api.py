@@ -215,14 +215,15 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.model_type = model_spec['model_type']
         self.processor = load_processor(model_spec)
         self.multimodal_model = load_model(model_spec)
-        self.template = model_spec["custom_chat_template"]
-        self.split_prefix = model_spec["output_split_prefix"]
+        self.split_prefix = model_spec['output_split_prefix']
         self.padding = False
         self.IDEFICS = False
         self.cull = None
 
+        if hasattr(model_spec, 'custom_chat_template'):
+            self.template = model_spec['custom_chat_template']
         if hasattr(model_spec, 'eos_to_cull'):
-            self.cull = model_spec["eos_to_cull"]
+            self.cull = model_spec['eos_to_cull']
         if 'idefics' in model_spec['model_name']:
             self.IDEFICS = True
         if hasattr(model_spec, 'padding'):
@@ -288,7 +289,7 @@ class HuggingfaceMultimodalModel(backends.Model):
             generated_text = self.processor.batch_decode(model_output, skip_special_tokens=True)
         
         # Store generated text
-        response = {'response': generated_text}
+        response = {"response": generated_text}
         print(f"\nResponse: {response}")
 
         response_text = generated_text[0].split(self.split_prefix)[-1] # Get the last assistant response

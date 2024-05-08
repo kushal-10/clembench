@@ -600,8 +600,7 @@
     "huggingface_id": "HuggingFaceM4/idefics-80b-instruct",
     "model_type": "Idefics",
     "eos_to_cull": "<end_of_utterance>",
-    "output_split_prefix": "Assistant:",
-    "custom_chat_template": "{%- for message in messages -%}{% if message['role'] == 'user' %}USER: {{ message['content'] }} <end_of_utterance>\n{% else %}ASSISTANT: {{ message['content'] }} <end_of_utterance>\n{% endif %}{% endfor %}ASSISTANT:"
+    "output_split_prefix": "Assistant:"
   },
   {
     "model_name": "idefics-9b-instruct",
@@ -609,8 +608,7 @@
     "huggingface_id": "HuggingFaceM4/idefics-9b-instruct",
     "model_type": "Idefics",
     "eos_to_cull": "<end_of_utterance>",
-    "output_split_prefix": "Assistant:",
-    "custom_chat_template": "{%- for message in messages -%}{% if message['role'] == 'user' %}USER: {{ message['content'] }} <end_of_utterance>\n{% else %}ASSISTANT: {{ message['content'] }} <end_of_utterance>\n{% endif %}{% endfor %}ASSISTANT:"
+    "output_split_prefix": "Assistant:"
   },
   {
     "model_name": "llava-llama-3-8b-v1_1-transformers",
