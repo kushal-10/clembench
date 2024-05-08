@@ -293,7 +293,8 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         response_text = generated_text[0].split(self.split_prefix)[-1] # Get the last assistant response
         if self.cull:
-            response_text = response_text.replace(self.cull, '') # Cull End of String token
+            rt_split = response_text.split(self.cull) # Cull from End of String token
+            response_text = rt_split[0]
 
         print(f"\nRESPONSE TEXT : {response_text} \n")
 
