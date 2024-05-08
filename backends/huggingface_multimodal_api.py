@@ -173,7 +173,11 @@ def generate_idefics_output(messages: list[Dict],
         if m['role'] == 'user':
             idefics_input.append('\nUser: ' + m['content'])
             if 'image' in m.keys():
-                idefics_input.append(m['image'])
+                if type(m['image']) == list:
+                    for im in m['image']:
+                        idefics_input.append(im)
+                else:
+                    idefics_input.append(m['image'])
             idefics_input.append('<end_of_utterance>')
         elif m['role'] == 'assistant':
             idefics_input.append('\nAssistant: ' + m['content'])        
@@ -238,53 +242,53 @@ class HuggingfaceMultimodalModel(backends.Model):
         :return: the continuation
         """
         #Check messages from multimodal reference game
-        print("##############################  INSTANCE   ########################################")
+        print("############################## MESSAGE ############################################")
         print(messages)
 
-        # # Get prompt by applying jinja template
-        # template_str = self.template
-        # template = Template(template_str)
-        # prompt_text = template.render(messages=messages)
+        # Get prompt by applying jinja template
+        template_str = self.template
+        template = Template(template_str)
+        prompt_text = template.render(messages=messages)
 
-        # # Check context limit
-        # prompt_tokens = self.processor.tokenizer.tokenize(prompt_text)
-        # context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
-        # if not context_check[0]:  # if context is exceeded, context_check[0] is False
-        #     logger.info(f"Context token limit for {self.model_spec.model_name} exceeded: "
-        #                 f"{context_check[1]}/{context_check[3]}")
-        #     # fail gracefully:
-        #     raise backends.ContextExceededError(f"Context token limit for {self.model_spec.model_name} exceeded",
-        #                                         tokens_used=context_check[1], tokens_left=context_check[2],
-        #                                         context_size=context_check[3]) 
+        # Check context limit
+        prompt_tokens = self.processor.tokenizer.tokenize(prompt_text)
+        context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
+        if not context_check[0]:  # if context is exceeded, context_check[0] is False
+            logger.info(f"Context token limit for {self.model_spec.model_name} exceeded: "
+                        f"{context_check[1]}/{context_check[3]}")
+            # fail gracefully:
+            raise backends.ContextExceededError(f"Context token limit for {self.model_spec.model_name} exceeded",
+                                                tokens_used=context_check[1], tokens_left=context_check[2],
+                                                context_size=context_check[3]) 
 
-        # # Get a list of images that will be passed to the Processor
-        # images = get_images(messages)
-        # if self.padding and images:
-        #     images = pad_images(images)
+        # Get a list of images that will be passed to the Processor
+        images = get_images(messages)
+        if self.padding and images:
+            images = pad_images(images)
 
-        # prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
+        prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
 
-        # if self.IDEFICS:
-        #     generated_text = generate_idefics_output(messages=messages,
-        #                                              model=self.multimodal_model,
-        #                                              processor=self.processor,
-        #                                              max_tokens=self.get_max_tokens(),
-        #                                              device=self.device)
-        # else:
-        #     # Generate the output
-        #     if not images:  # If no images are present in the history + current uttereance, use tokenizer to get inputs
-        #         inputs = self.processor.tokenizer(prompt_text, return_tensors="pt").to(self.device)
-        #     else:
-        #         inputs = self.processor(prompt_text, images=images, return_tensors="pt").to(self.device)
-        #     model_output = self.multimodal_model.generate(**inputs, max_new_tokens=self.get_max_tokens())
-        #     generated_text = self.processor.batch_decode(model_output, skip_special_tokens=True)
+        if self.IDEFICS:
+            generated_text = generate_idefics_output(messages=messages,
+                                                     model=self.multimodal_model,
+                                                     processor=self.processor,
+                                                     max_tokens=self.get_max_tokens(),
+                                                     device=self.device)
+        else:
+            # Generate the output
+            if not images:  # If no images are present in the history + current uttereance, use tokenizer to get inputs
+                inputs = self.processor.tokenizer(prompt_text, return_tensors="pt").to(self.device)
+            else:
+                inputs = self.processor(prompt_text, images=images, return_tensors="pt").to(self.device)
+            model_output = self.multimodal_model.generate(**inputs, max_new_tokens=self.get_max_tokens())
+            generated_text = self.processor.batch_decode(model_output, skip_special_tokens=True)
             
 
-        # # Store generated text
-        # response = {'response': generated_text}
-        # print(f"\nResponse: {response}")
+        # Store generated text
+        response = {'response': generated_text}
+        print(f"\nResponse: {response}")
 
-        # response_text = generated_text[0].split(self.cull)[-1] # Get the last assistant response
-        # print(f"\nRESPONSE TEXT : {response_text} \n")
+        response_text = generated_text[0].split(self.cull)[-1] # Get the last assistant response
+        print(f"\nRESPONSE TEXT : {response_text} \n")
 
         return prompt, response, response_text
