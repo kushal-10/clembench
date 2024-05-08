@@ -184,6 +184,7 @@ def generate_idefics_output(messages: list[Dict],
             idefics_input.append('<end_of_utterance>')    
     idefics_input.append('\nAssistant:')  
     idefics_input = [idefics_input]
+    prompt_str = str(idefics_input) # Return a str type input to Idefics - For returning 'prompt' in generate_response 
 
     inputs = processor(idefics_input, add_end_of_utterance_token=False, return_tensors="pt").to(device)
  
@@ -195,7 +196,7 @@ def generate_idefics_output(messages: list[Dict],
     generated_ids = model.generate(**inputs, eos_token_id=exit_condition, bad_words_ids=bad_words_ids, max_length=max_tokens) 
     generated_text = processor.batch_decode(generated_ids)
 
-    return generated_text
+    return generated_text, prompt_str
 
 
 class HuggingfaceMultimodal(backends.Backend):
@@ -245,36 +246,38 @@ class HuggingfaceMultimodalModel(backends.Model):
         print("############################## MESSAGE ############################################")
         print(messages)
 
-        # Get prompt by applying jinja template
-        template_str = self.template
-        template = Template(template_str)
-        prompt_text = template.render(messages=messages)
-
-        # Check context limit
-        prompt_tokens = self.processor.tokenizer.tokenize(prompt_text)
-        context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
-        if not context_check[0]:  # if context is exceeded, context_check[0] is False
-            logger.info(f"Context token limit for {self.model_spec.model_name} exceeded: "
-                        f"{context_check[1]}/{context_check[3]}")
-            # fail gracefully:
-            raise backends.ContextExceededError(f"Context token limit for {self.model_spec.model_name} exceeded",
-                                                tokens_used=context_check[1], tokens_left=context_check[2],
-                                                context_size=context_check[3]) 
-
-        # Get a list of images that will be passed to the Processor
-        images = get_images(messages)
-        if self.padding and images:
-            images = pad_images(images)
-
-        prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
-
         if self.IDEFICS:
-            generated_text = generate_idefics_output(messages=messages,
-                                                     model=self.multimodal_model,
-                                                     processor=self.processor,
-                                                     max_tokens=self.get_max_tokens(),
-                                                     device=self.device)
+            generated_text, prompt_text = generate_idefics_output(messages=messages,
+                                                                model=self.multimodal_model,
+                                                                processor=self.processor,
+                                                                max_tokens=self.get_max_tokens(),
+                                                                device=self.device)
+            
+            prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
         else:
+            # Get prompt by applying jinja template
+            template_str = self.template
+            template = Template(template_str)
+            prompt_text = template.render(messages=messages)
+
+            # Check context limit
+            prompt_tokens = self.processor.tokenizer.tokenize(prompt_text)
+            context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
+            if not context_check[0]:  # if context is exceeded, context_check[0] is False
+                logger.info(f"Context token limit for {self.model_spec.model_name} exceeded: "
+                            f"{context_check[1]}/{context_check[3]}")
+                # fail gracefully:
+                raise backends.ContextExceededError(f"Context token limit for {self.model_spec.model_name} exceeded",
+                                                    tokens_used=context_check[1], tokens_left=context_check[2],
+                                                    context_size=context_check[3]) 
+
+            # Get a list of images that will be passed to the Processor
+            images = get_images(messages)
+            if self.padding and images:
+                images = pad_images(images)
+
+            prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
+
             # Generate the output
             if not images:  # If no images are present in the history + current uttereance, use tokenizer to get inputs
                 inputs = self.processor.tokenizer(prompt_text, return_tensors="pt").to(self.device)
@@ -282,8 +285,7 @@ class HuggingfaceMultimodalModel(backends.Model):
                 inputs = self.processor(prompt_text, images=images, return_tensors="pt").to(self.device)
             model_output = self.multimodal_model.generate(**inputs, max_new_tokens=self.get_max_tokens())
             generated_text = self.processor.batch_decode(model_output, skip_special_tokens=True)
-            
-
+        
         # Store generated text
         response = {'response': generated_text}
         print(f"\nResponse: {response}")
