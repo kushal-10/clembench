@@ -268,7 +268,9 @@ class HuggingfaceMultimodalModel(backends.Model):
         # Proceed only if model supports multiple images
         has_multiple_images = check_multiple_image(messages=messages)
         if has_multiple_images and not self.supports_multiple_images:
-            raise ValueError(f"Multiple images not supported in a single turn for model {self.model_name}")
+            print(f"Multiple images not supported in a single turn for model {self.model_name}")
+            return None, None, None
+            
 
 
         if self.IDEFICS:
