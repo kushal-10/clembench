@@ -269,7 +269,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         has_multiple_images = check_multiple_image(messages=messages)
         if has_multiple_images and not self.supports_multiple_images:
             print(f"Multiple images not supported in a single turn for model {self.model_name}")
-            return None, None, None
+            return "", {"response": ""}, ""
             
 
 
@@ -323,5 +323,6 @@ class HuggingfaceMultimodalModel(backends.Model):
             response_text = rt_split[0]
 
         print(f"\nRESPONSE TEXT : {response_text} \n")
+
 
         return prompt, response, response_text
