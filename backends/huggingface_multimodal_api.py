@@ -205,7 +205,7 @@ def check_multiple_image(messages: List[Dict]):
     '''
     has_multiple_images = False 
     for msg in messages:
-        if type(msg['image']) == list:
+        if 'image' in msg and type(msg['image']) == list:
             if len(msg['image']) > 1:
                 has_multiple_images = True
 
