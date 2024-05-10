@@ -226,7 +226,7 @@ class HuggingfaceMultimodalModel(backends.Model):
 
     def __init__(self, model_spec: backends.ModelSpec):
         super().__init__(model_spec)
-
+        
         # Load instance variable used for evey model
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model_type = model_spec['model_type']
@@ -236,12 +236,14 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.split_prefix = model_spec['output_split_prefix']
         self.context_size = get_context_limit(model_spec)
 
+        #Type cast model_spec to a Dictionary, for cleaner loading of variables
+        model_spec_dict = vars(model_spec)
         # Load model specific instance variables
-        self.template = model_spec.get('custom_chat_template', None)
+        self.template = model_spec_dict.get('custom_chat_template', None)
+        self.cull = model_spec_dict.get('eos_to_cull', None)
+        self.supports_multiple_images = model_spec_dict.get('supports_multiple_images', False)
+        self.padding = model_spec_dict.get('padding', False)
         self.idefics = 'idefics' in model_spec['model_name']
-        self.cull = model_spec.get('eos_to_cull', None)
-        self.supports_multiple_images = model_spec.get('supports_multiple_images', False)
-        self.padding = model_spec.get('padding', False)
 
     def generate_response(self, messages: List[Dict]) -> Tuple[Any, Any, str]:
         """
