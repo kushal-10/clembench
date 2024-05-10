@@ -29,6 +29,7 @@ def get_context_limit(model_spec: backends.ModelSpec) -> int:
     hf_model_str = model_spec['huggingface_id']
     model_config = AutoConfig.from_pretrained(hf_model_str)
 
+    # Some models have 'max_position_embeddings' others have - 'max_sequence_length' 
     if hasattr(model_config, "text_config"):
         context = model_config.text_config.max_position_embeddings
     elif hasattr(model_config, "max_sequence_length"):
@@ -67,7 +68,7 @@ def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
     hf_model_str = model_spec['huggingface_id'] # Get the model name
    
     if hasattr(model_spec, 'not_fast'):
-        # Only used by LLaVA 1.6 34B (Throws mismatch <image> token error when not set to False)
+        # Only used by LLaVA 1.6 34B (Throws mismatch <image> token error when use_fast is not set to False)
         processor = AutoProcessor.from_pretrained(hf_model_str, use_fast=False, device_map="auto", verbose=False)
     else:
         processor = AutoProcessor.from_pretrained(hf_model_str, device_map="auto", verbose=False)
@@ -138,6 +139,7 @@ def get_images(messages: list[Dict]) -> list:
         if 'image' in message:
             images.append(message['image'])
 
+    # Return None if no image is passed - Use AutoTokenizer to generate output and not AutoProcessor
     if not images:
         return None
     
@@ -192,8 +194,8 @@ def generate_idefics_output(messages: list[Dict],
     exit_condition = processor.tokenizer("<end_of_utterance>", add_special_tokens=False).input_ids
     bad_words_ids = processor.tokenizer(["<image>", "<fake_token_around_image>"], add_special_tokens=False).input_ids
 
-    max_tokens = 2048 # Default value for input max length = 20, set a high value for now 
-    generated_ids = model.generate(**inputs, eos_token_id=exit_condition, bad_words_ids=bad_words_ids, max_length=max_tokens) 
+    max_input_tokens = 2048 # Default value for input max length = 20, set a high value for now 
+    generated_ids = model.generate(**inputs, eos_token_id=exit_condition, bad_words_ids=bad_words_ids, max_length=max_input_tokens) 
     generated_text = processor.batch_decode(generated_ids)
 
     return generated_text, prompt_str
@@ -224,6 +226,8 @@ class HuggingfaceMultimodalModel(backends.Model):
 
     def __init__(self, model_spec: backends.ModelSpec):
         super().__init__(model_spec)
+
+        # Initialize instance variable used for evey model
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model_type = model_spec['model_type']
         self.model_name = model_spec['model_name']
@@ -231,21 +235,13 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.multimodal_model = load_model(model_spec)
         self.split_prefix = model_spec['output_split_prefix']
         self.context_size = get_context_limit(model_spec)
-        if hasattr(model_spec, 'custom_chat_template'):
-            self.template = model_spec['custom_chat_template']
 
-        self.padding = False
-        self.IDEFICS = False
-        self.cull = None
-        self.supports_multiple_images = False
-        if hasattr(model_spec, 'eos_to_cull'):
-            self.cull = model_spec['eos_to_cull']
-        if 'idefics' in model_spec['model_name']:
-            self.IDEFICS = True
-        if hasattr(model_spec, 'padding'):
-            self.padding = True
-        if hasattr(model_spec, 'supports_multiple_images'):
-            self.supports_multiple_images = True
+        # Initialize model specific instance variables
+        self.template = model_spec.get('custom_chat_template', None)
+        self.idefics = 'idefics' in model_spec['model_name']
+        self.cull = model_spec.get('eos_to_cull', None)
+        self.supports_multiple_images = model_spec.get('supports_multiple_images', False)
+        self.padding = model_spec.get('padding', False)
 
     def generate_response(self, messages: List[Dict]) -> Tuple[Any, Any, str]:
         """
@@ -270,10 +266,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         if has_multiple_images and not self.supports_multiple_images:
             print(f"Multiple images not supported in a single turn for model {self.model_name}")
             return "", {"response": ""}, ""
-            
 
-
-        if self.IDEFICS:
+        if self.idefics:
             generated_text, prompt_text = generate_idefics_output(messages=messages,
                                                                 model=self.multimodal_model,
                                                                 processor=self.processor,
@@ -305,11 +299,12 @@ class HuggingfaceMultimodalModel(backends.Model):
 
             prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
 
-            # Generate the output
             if not images:  # If no images are present in the history + current uttereance, use tokenizer to get inputs
                 inputs = self.processor.tokenizer(prompt_text, return_tensors="pt").to(self.device)
             else:
                 inputs = self.processor(prompt_text, images=images, return_tensors="pt").to(self.device)
+
+            # Generate the output
             model_output = self.multimodal_model.generate(**inputs, max_new_tokens=self.get_max_tokens())
             generated_text = self.processor.batch_decode(model_output, skip_special_tokens=True)
         
