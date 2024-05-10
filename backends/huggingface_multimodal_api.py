@@ -152,6 +152,7 @@ def get_images(messages: list[Dict]) -> list:
         if img.startswith('http') or img.startswith('https'):
             image = Image.open(requests.get(img, stream=True).raw).convert('RGB')
         else:
+            print(img)
             image = Image.open(img).convert('RGB')
         loaded_images.append(image)
 
