@@ -270,10 +270,6 @@ class HuggingfaceMultimodalModel(backends.Model):
         :param log_messages: If True, raw and cleaned messages passed will be logged.
         :return: the continuation
         """
-        #Check messages from multimodal reference game
-        print("############################## MESSAGE ############################################")
-        print(messages)
-
         # Check to see if game passes multiple images in a single turn
         # Proceed only if model supports multiple images, else return blanks for prompt, response and response_text
         has_multiple_images = check_multiple_image(messages=messages)
@@ -328,13 +324,10 @@ class HuggingfaceMultimodalModel(backends.Model):
         
         # Store generated text
         response = {"response": generated_text}
-        print(f"\nResponse: {response}")
 
         response_text = generated_text[0].split(self.split_prefix)[-1] # Get the last assistant response
         if self.cull:
             rt_split = response_text.split(self.cull) # Cull from End of String token
             response_text = rt_split[0]
-
-        print(f"\nRESPONSE TEXT : {response_text} \n")
 
         return prompt, response, response_text
