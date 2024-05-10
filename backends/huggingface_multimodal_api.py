@@ -286,6 +286,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         # Get input prompt if model is of type IdeficsForVisionText2Text
         if self.idefics:
             prompt_text = generate_idefics_input(messages=messages) 
+            prompt_text = str(prompt_text)
 
         # Check context limit
         prompt_tokens = self.processor.tokenizer.tokenize(prompt_text) # This includes the image path/link for Idefics
