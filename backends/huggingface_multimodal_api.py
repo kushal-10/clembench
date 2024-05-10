@@ -136,7 +136,11 @@ def get_images(messages: list[Dict]) -> list:
     images = []
     for message in messages:
         if 'image' in message:
-            images.append(message['image'])
+            if type(message['image'] == list):
+                for img in message['image']:
+                    images.append(img)
+            else:
+                images.append(message['image'])
 
     # Return None if no image is passed - Use AutoTokenizer to generate output and not AutoProcessor
     if not images:
