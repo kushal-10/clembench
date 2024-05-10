@@ -83,7 +83,6 @@ def load_model(model_spec: backends.ModelSpec):
     :param model_spec: A dictionary that defines the model to be used, loaded from Model Registry
     :return model: The specific model
     '''
-
     logger.info(f'Start loading huggingface model weights: {model_spec.model_name}')
     hf_model_str = model_spec['huggingface_id'] # Get the model name
 
@@ -154,20 +153,14 @@ def get_images(messages: list[Dict]) -> list:
 
     return loaded_images
 
-def generate_idefics_output(messages: list[Dict], 
-                            model: IdeficsForVisionText2Text, 
-                            processor: AutoProcessor,
-                            max_tokens: int, 
-                            device) -> list[str]:
+# Separate Input and Output generation for Idefics
+# Input is required for context check
+def generate_idefics_input(messages: list[Dict]):
     '''
-    Return generated text from Idefics model 
+    Return inputs specific to the format of Idefics
 
     param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
-    param model: Idefics model
-    param processor: Idefics processor
-    param device: Processing device - cuda/CPU
     '''
-
     #Create a list containing the prompt text and images specific to idefics input
     #Refer - https://huggingface.co/HuggingFaceM4/idefics-80b-instruct
     idefics_input = [] 
@@ -186,8 +179,23 @@ def generate_idefics_output(messages: list[Dict],
             idefics_input.append('<end_of_utterance>')    
     idefics_input.append('\nAssistant:')  
     idefics_input = [idefics_input]
-    prompt_str = str(idefics_input) # Return a str type input to Idefics - For returning 'prompt' in generate_response 
 
+    return idefics_input
+
+def generate_idefics_output(messages: list[Dict], 
+                            model: IdeficsForVisionText2Text, 
+                            processor: AutoProcessor,
+                            max_tokens: int, 
+                            device) -> list[str]:
+    '''
+    Return generated text from Idefics model 
+
+    param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
+    param model: Idefics model
+    param processor: Idefics processor
+    param device: Processing device - cuda/CPU
+    '''
+    idefics_input = generate_idefics_input(messages=messages)
     inputs = processor(idefics_input, add_end_of_utterance_token=False, return_tensors="pt").to(device)
  
     # Generation args for Idefics
@@ -198,7 +206,7 @@ def generate_idefics_output(messages: list[Dict],
     generated_ids = model.generate(**inputs, eos_token_id=exit_condition, bad_words_ids=bad_words_ids, max_length=max_input_tokens) 
     generated_text = processor.batch_decode(generated_ids)
 
-    return generated_text, prompt_str
+    return generated_text
 
 def check_multiple_image(messages: List[Dict]):
     '''
@@ -269,46 +277,49 @@ class HuggingfaceMultimodalModel(backends.Model):
             print(f"Multiple images not supported in a single turn for model {self.model_name}")
             return "", {"response": ""}, ""
 
-        if self.idefics:
-            generated_text, prompt_text = generate_idefics_output(messages=messages,
-                                                                model=self.multimodal_model,
-                                                                processor=self.processor,
-                                                                max_tokens=self.get_max_tokens(),
-                                                                device=self.device)
-            
-            prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
-        else:
-            # Get input prompt by applying jinja template
+        prompt_text = ""
+        # Get input prompt by applying jinja template, if template is provided
+        if self.template:
             template_str = self.template
             template = Template(template_str)
             prompt_text = template.render(messages=messages)
+        # Get input prompt if model is of type IdeficsForVisionText2Text
+        if self.idefics:
+            prompt_text = generate_idefics_input(messages=messages) 
 
-            # Check context limit
-            prompt_tokens = self.processor.tokenizer.tokenize(prompt_text)
-            context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
-            if not context_check[0]:  # if context is exceeded, context_check[0] is False
-                logger.info(f"Context token limit for {self.model_spec.model_name} exceeded: "
-                            f"{context_check[1]}/{context_check[3]}")
-                # fail gracefully:
-                raise backends.ContextExceededError(f"Context token limit for {self.model_spec.model_name} exceeded",
-                                                    tokens_used=context_check[1], tokens_left=context_check[2],
-                                                    context_size=context_check[3]) 
+        # Check context limit
+        prompt_tokens = self.processor.tokenizer.tokenize(prompt_text) # This includes the image path/link for Idefics
+        context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
+        if not context_check[0]:  # if context is exceeded, context_check[0] is False
+            logger.info(f"Context token limit for {self.model_spec.model_name} exceeded: "
+                        f"{context_check[1]}/{context_check[3]}")
+            # fail gracefully:
+            raise backends.ContextExceededError(f"Context token limit for {self.model_spec.model_name} exceeded",
+                                                tokens_used=context_check[1], tokens_left=context_check[2],
+                                                context_size=context_check[3]) 
 
-            # Get a list of images that will be passed to the Processor
-            images = get_images(messages)
-            if self.padding and images:
-                images = pad_images(images)
+        # Get a list of images that will be passed to the Processor
+        images = get_images(messages)
+        if self.padding and images:
+            images = pad_images(images)
 
-            prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
-
+        # Generate the output
+        if self.idefics:
+            generated_text = generate_idefics_output(messages=messages,
+                                                    model=self.multimodal_model,
+                                                    processor=self.processor,
+                                                    max_tokens=self.get_max_tokens(),
+                                                    device=self.device)
+        
+        else:
             if not images:  # If no images are present in the history + current uttereance, use tokenizer to get inputs
                 inputs = self.processor.tokenizer(prompt_text, return_tensors="pt").to(self.device)
             else:
                 inputs = self.processor(prompt_text, images=images, return_tensors="pt").to(self.device)
-
-            # Generate the output
             model_output = self.multimodal_model.generate(**inputs, max_new_tokens=self.get_max_tokens())
             generated_text = self.processor.batch_decode(model_output, skip_special_tokens=True)
+        
+        prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
         
         # Store generated text
         response = {"response": generated_text}
@@ -320,6 +331,5 @@ class HuggingfaceMultimodalModel(backends.Model):
             response_text = rt_split[0]
 
         print(f"\nRESPONSE TEXT : {response_text} \n")
-
 
         return prompt, response, response_text
