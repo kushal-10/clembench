@@ -227,7 +227,7 @@ class HuggingfaceMultimodalModel(backends.Model):
     def __init__(self, model_spec: backends.ModelSpec):
         super().__init__(model_spec)
 
-        # Initialize instance variable used for evey model
+        # Load instance variable used for evey model
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model_type = model_spec['model_type']
         self.model_name = model_spec['model_name']
@@ -236,7 +236,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.split_prefix = model_spec['output_split_prefix']
         self.context_size = get_context_limit(model_spec)
 
-        # Initialize model specific instance variables
+        # Load model specific instance variables
         self.template = model_spec.get('custom_chat_template', None)
         self.idefics = 'idefics' in model_spec['model_name']
         self.cull = model_spec.get('eos_to_cull', None)
@@ -261,7 +261,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         print(messages)
 
         # Check to see if game passes multiple images in a single turn
-        # Proceed only if model supports multiple images
+        # Proceed only if model supports multiple images, else return blanks for prompt, response and response_text
         has_multiple_images = check_multiple_image(messages=messages)
         if has_multiple_images and not self.supports_multiple_images:
             print(f"Multiple images not supported in a single turn for model {self.model_name}")
@@ -276,7 +276,7 @@ class HuggingfaceMultimodalModel(backends.Model):
             
             prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
         else:
-            # Get prompt by applying jinja template
+            # Get input prompt by applying jinja template
             template_str = self.template
             template = Template(template_str)
             prompt_text = template.render(messages=messages)
