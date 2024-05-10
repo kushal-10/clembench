@@ -3,23 +3,20 @@ import numpy as np
 from maps import AbstractMap
 import os
 import random
-import json
 
 
 # set the name of the game in the script, as you named the directory
 # this name will be used everywhere, including in the table of results
 GAME_NAME = 'mm_mapworld'
-NUM_INSTANCES = 10
-GRIDS = {"small": (4,4), "medium": (4,4), "large": (4,4)}
-SIZES = {"small": 4, "medium": 6, "large": 8} # num_nodes
+NUM_INSTANCES = 3
+GRIDS = {"small": (3,3), "medium": (3,4), "large": (4,4)}
+SIZES = {"small": 4, "medium": 6, "large": 8}
 SEED = 42
 RANDOM_PATH = 'random_test_images'
 IMAGE_PATH = os.path.join('games', 'mm_mapworld', 'resources', 'images')
-DATASET_PATH = os.path.join("games", "mm_mapworld", "resources", "ade_20k", "needed_imgs")
-MAPPING_PATH = os.path.join("games", "mm_mapworld", "resources", "ade_20k", "ade_cat_instances.json")
 MOVE_CONSTRUCTION = "GO: "
 STOP_CONSTRUCTION = "DONE"
-RESPONSE_REGEX = "\{[\s]*\"description\":\s*\"([^\{]*?)\"\s*,\s*\"action\":\s*\"([^\{]*?)\"[\s]*\}"
+RESONSE_REGEX = '{"description":\s*".+",(\s|\n)*"action":\s*".+"}'
 DONE_REGEX = 'DONE'
 MOVE_REGEX = 'GO:\s*(north|east|west|south)'
 
@@ -28,18 +25,20 @@ def create_instances(grid_size = GRIDS['medium'], graph_size = SIZES['medium'], 
     instances = []
     np.random.seed(SEED)
     random.seed(SEED)
+    path = os.path.join(IMAGE_PATH, RANDOM_PATH)
+    imgs = np.array([os.path.join(path, f) for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))], dtype=object)
     for i in range(num_instances):
+        map_images = np.random.choice(imgs, size=graph_size)
         map = AbstractMap(*grid_size, graph_size)
         nodes = [str(n) for n in map.G]
         edges = list(map.G.edges())
         rev_edges = [(edge[1], edge[0]) for edge in edges]
         edges.extend(rev_edges)
-        img_ref, cat_ref = assign_images(nodes)
+        img_ref = {nodes[i]: str(map_images[i]) for i in range(graph_size)}
         instances.append({
             'nodes': nodes,
             'edges': [str(e) for e in edges],
             'imgs': img_ref,
-            'cats': cat_ref,
             'start': random.choice(nodes),
             'use_images': True,
             'reprompt': False,
@@ -48,20 +47,6 @@ def create_instances(grid_size = GRIDS['medium'], graph_size = SIZES['medium'], 
         })
     return instances
 
-def assign_images(nodes):
-    with open(MAPPING_PATH, 'r', encoding='utf-8') as f:
-        mapping = json.load(f)
-    cats = mapping.keys()
-    cats_inside = [cat for cat in cats if 'outdoor' not in cat]
-    chosen_cats = np.random.choice(cats_inside, size=len(nodes))
-    imgs = {}
-    cat_mapping = {}
-    for i in range(len(nodes)):
-        cat_mapping[nodes[i]] = chosen_cats[i].split("/")[1]
-        node_img = np.random.choice(mapping[chosen_cats[i]])
-        imgs[nodes[i]] = os.path.join(DATASET_PATH, node_img)
-    return imgs, cat_mapping
-
 def instance_from_args(args, prompts):
     instances = create_instances(
         grid_size=GRIDS[args['size']],
@@ -69,13 +54,13 @@ def instance_from_args(args, prompts):
         num_instances=NUM_INSTANCES
     )
     for i in range(len(instances)):
-        if args.get('one_shot', 0):
+        if args['one_shot']:
             instances[i]['initial_prompt'] = prompts['initial_one_shot']
         else:
             instances[i]['initial_prompt'] = prompts['initial']
         instances[i]['success_response'] = prompts['later_success']
         instances[i]['invalid_response'] = prompts['later_invalid']
-        if args.get('reprompt', 0):
+        if args['reprompt']:
             instances[i]['reprompt'] = True
         instances[i]["reprompt_format"] = prompts["reprompt_format"]
         instances[i]["limit_warning"] = prompts["limit_warning"]
@@ -99,11 +84,14 @@ class MmMapWorldInstanceGenerator(GameInstanceGenerator):
             'loop_warning': self.load_template('resources/later_prompts/loop.template'),
         }
         experiments = {
-            'small': {"size": "small", "reprompt": False, "one_shot": True},
-            'medium': {"size": "medium", "reprompt": False, "one_shot": True},
-            'large': {"size": "large", "reprompt": False, "one_shot": True},
-            # medium cycles,
-            # large cycles
+#             'random_small': {"size": "small", "reprompt": False},
+#             'random_medium': {"size": "medium", "reprompt": False},
+            'random_small_one_shot': {"size": "small", "reprompt": False, "one_shot": True},
+            'random_medium_one_shot': {"size": "medium", "reprompt": False, "one_shot": True},
+            # 'random_large': {"size": "large", "reprompt": False},
+            # 'random_small_reprompt': {"size": "small", "reprompt": True},
+            # 'random_medium_reprompt': {"size": "medium", "reprompt": True},
+            # 'random_large_reprompt': {"size": "large", "reprompt": True},
         }
 
         for exp in experiments.keys():
@@ -116,7 +104,7 @@ class MmMapWorldInstanceGenerator(GameInstanceGenerator):
                      instance[key] = value
                  instance["move_construction"] = MOVE_CONSTRUCTION
                  instance["stop_construction"] = STOP_CONSTRUCTION
-                 instance["response_regex"] = RESPONSE_REGEX
+                 instance["response_regex"] = RESONSE_REGEX
                  instance["done_regex"] = DONE_REGEX
                  instance["move_regex"] = MOVE_REGEX
                  game_id += 1

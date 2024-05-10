@@ -26,7 +26,7 @@ from clemgame.metrics import METRIC_ABORTED, METRIC_SUCCESS, METRIC_LOSE, METRIC
 
 DIRS = ["north", "south", "east", "west"]
 GAME_NAME = 'mm_mapworld'
-MAX_TURNS = 20
+MAX_TURNS = 15
 
 CARDINAL_TO_DELTA = {
     'north': (0, 1),
@@ -220,7 +220,8 @@ class MmMapWorld(DialogueGameMaster):
                 self.aborted = True
                 self.log_to_self("Invalid format", "Game aborted.")
                 return False
-            action = hit.group(2)
+            loaded = json.loads(hit.group())
+            action = loaded["action"]
             action_hit = re.search(self.done_regex, action)
             if action_hit:
                 self.stop = True
@@ -250,7 +251,7 @@ class MmMapWorld(DialogueGameMaster):
                 self.add_user_message(self.describer, utterance)
         if player == self.describer:
             if self.use_images:
-                self.add_user_message(self.walker, utterance, image = player.imgs[self.current_room])
+                self.add_user_message(self.walker, utterance, player.imgs[self.current_room])
             else:
                 self.add_user_message(self.walker, utterance)
                 
@@ -264,7 +265,7 @@ class MmMapWorld(DialogueGameMaster):
         reprompt = self.reprompt_format
         reprompt = reprompt.replace("$DIRECTIONS$", ', '.join(avail))
         if self.use_images:
-            self.add_user_message(self.walker, reprompt, image = self.imgs[self.current_room])
+            self.add_user_message(self.walker, reprompt, self.imgs[self.current_room])
         else:
             self.add_user_message(self.walker, reprompt)
         self.did_reprompt = True
@@ -294,17 +295,16 @@ class MmMapWorld(DialogueGameMaster):
             if "image" in history[i]:
                 del history[i]['image']
 
-    # def add_message(self, player: Player, utterance: str, role: str, image = None):
-    #     if image is None:
-    #         message = {"role": role, "content": utterance}
-    #     else:
-    #         message = {"role": role, "content": utterance, "image": image}
-    #         self.remove_previous_images(player)
-    #     history = self.messages_by_names[player.descriptor]
-    #     history.append(message)
+    def add_message(self, player: Player, utterance: str, role: str, image = None):
+        if image is None:
+            message = {"role": role, "content": utterance}
+        else:
+            message = {"role": role, "content": utterance, "image": image}
+            self.remove_previous_images(player)
+        history = self.messages_by_names[player.descriptor]
+        history.append(message)
 
     def add_user_message(self, player: Player, utterance: str, image = None):
-        self.remove_previous_images(player)
         self.add_message(player, utterance, role="user", image=image)
         
         
@@ -375,8 +375,6 @@ class MM_MapWorldScorer(GameScorer):
 
         last = path[0]
         for i in range(1, len(path)):
-            if path[i] == path[i - 1]:
-                continue
             x1, y1 = last
             x2, y2 = path[i]
             dx = x2 - x1
