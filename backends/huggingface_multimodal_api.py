@@ -174,7 +174,8 @@ def generate_idefics_input(messages: list[Dict]):
             if 'image' in m.keys():
                 if type(m['image']) == list: # Check if multiple images are passed, append accordingly
                     for im in m['image']:
-                        idefics_input.append(im)
+                        loaded_im = Image.open(im).convert('RGB')
+                        idefics_input.append(loaded_im)
                 else:
                     idefics_input.append(m['image'])
             idefics_input.append('<end_of_utterance>')
