@@ -332,4 +332,5 @@ class HuggingfaceMultimodalModel(backends.Model):
             response_text = rt_split[0]
         response_text = response_text.strip()
 
+        print(f"\nRESPONSE TEXT : {response_text}\n")
         return prompt, response, response_text
