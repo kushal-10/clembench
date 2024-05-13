@@ -330,5 +330,6 @@ class HuggingfaceMultimodalModel(backends.Model):
         if self.cull:
             rt_split = response_text.split(self.cull) # Cull from End of String token
             response_text = rt_split[0]
+        response_text = response_text.strip()
 
         return prompt, response, response_text
