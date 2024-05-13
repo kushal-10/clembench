@@ -305,8 +305,6 @@ class HuggingfaceMultimodalModel(backends.Model):
         if self.padding and images:
             images = pad_images(images)
 
-        print(f"\nINPUT PROMPT TEXT ########################################################################\n")
-        print(prompt_text)
         # Generate the output
         if self.idefics:
             generated_text = generate_idefics_output(messages=messages,
@@ -332,8 +330,5 @@ class HuggingfaceMultimodalModel(backends.Model):
         if self.cull:
             rt_split = response_text.split(self.cull) # Cull from End of String token
             response_text = rt_split[0]
-        
-        print(f"\nRESPONSE TEXT ########################################################################\n")
-        print(response_text)
 
         return prompt, response, response_text
