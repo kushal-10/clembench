@@ -125,6 +125,21 @@ def pad_images(images):
 
     return padded_images
 
+def load_image(image: str):
+    '''
+    Load an image based on if its a local path or URL
+    
+    :param image: Image path/url
+    :return loaded_image: PIL Image 
+    '''
+
+    if image.startswith('http') or image.startswith('https'):
+        image = Image.open(requests.get(image, stream=True).raw).convert('RGB')
+    else:
+        image = Image.open(image).convert('RGB')
+    
+    return image
+
 def get_images(messages: list[Dict]) -> list:
     '''
     Return loaded images from messages
@@ -149,10 +164,7 @@ def get_images(messages: list[Dict]) -> list:
     # Load Images
     loaded_images = []
     for img in images:
-        if img.startswith('http') or img.startswith('https'):
-            image = Image.open(requests.get(img, stream=True).raw).convert('RGB')
-        else:
-            image = Image.open(img).convert('RGB')
+        image = load_image(img)
         loaded_images.append(image)
 
     return loaded_images
@@ -174,7 +186,7 @@ def generate_idefics_input(messages: list[Dict]):
             if 'image' in m.keys():
                 if type(m['image']) == list: # Check if multiple images are passed, append accordingly
                     for im in m['image']:
-                        loaded_im = Image.open(im).convert('RGB')
+                        loaded_im = load_image(im)
                         idefics_input.append(loaded_im)
                 else:
                     idefics_input.append(m['image'])
