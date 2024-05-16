@@ -940,7 +940,6 @@ def load_benchmark(game_name: str, do_setup: bool = True, instances_name: str = 
 def find_benchmark(game_name: str):
     for gb_cls in GameBenchmark.__subclasses__():
         gb = gb_cls()  # subclasses should only get the dialog_pair
-        print(gb_cls)
         if gb.applies_to(game_name):
             return gb
     raise NotImplementedError("No game benchmark for:", game_name)
