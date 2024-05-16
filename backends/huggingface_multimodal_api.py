@@ -343,7 +343,5 @@ class HuggingfaceMultimodalModel(backends.Model):
             rt_split = response_text.split(self.cull) # Cull from End of String token
             response_text = rt_split[0]
         response_text = response_text.strip()
-        
-        print(f"RESPONSE: {response_text}")
 
         return prompt, response, response_text
