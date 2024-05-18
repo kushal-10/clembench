@@ -1,7 +1,7 @@
 import pandas as pd
 from clemgame.clemgame import GameInstanceGenerator
 
-GAME_NAME: str = "matchit_1q"
+GAME_NAME: str = "matchit_5q"
 # n instances to be generated
 N: int = 10 # max = len(similar_images.csv) = 161, if not using other image pairs
 # paths to image pair tables
