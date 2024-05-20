@@ -1,6 +1,10 @@
 # Ours
 key*.json
 results
+results_base
+results_1q
+results_5q
+results_info
 results_eval
 /venv
 evaltmp.ipynb
