@@ -3,7 +3,7 @@ import json
 from clemgame.clemgame import GameInstanceGenerator
 from typing import Dict
 
-GAME_NAME: str = "matchit_ascii"
+GAME_NAME: str = "matchit_ascii_info"
 # n instances to be generated
 N: int = 10 # max = len(similar_grid_1) = 27, if not using other grid pairs
 # paths to image pair tables
