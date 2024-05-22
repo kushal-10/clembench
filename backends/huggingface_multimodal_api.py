@@ -305,6 +305,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         if self.idefics:
             _, prompt_text  = generate_idefics_input(messages=messages) 
 
+        print(f"Idefics prompt - only text {prompt_text} ")
+
         # Check context limit
         prompt_tokens = self.processor.tokenizer.tokenize(prompt_text) 
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
