@@ -299,10 +299,11 @@ class HuggingfaceMultimodalModel(backends.Model):
         # Get input prompt if model is of type IdeficsForVisionText2Text
         if self.idefics:
             prompt_text = generate_idefics_input(messages=messages) 
+            print(prompt_text)
             prompt_text = str(prompt_text)
 
         # Check context limit
-        prompt_tokens = self.processor.tokenizer.tokenize(prompt_text) # This includes the image path/link for Idefics
+        prompt_tokens = self.processor.tokenizer.tokenize(prompt_text) 
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
         if not context_check[0]:  # if context is exceeded, context_check[0] is False
             logger.info(f"Context token limit for {self.model_spec.model_name} exceeded: "
