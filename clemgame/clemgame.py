@@ -488,18 +488,16 @@ class DialogueGameMaster(GameMaster):
         action = {'type': type_, 'content': value}
         self.log_event("GM", "GM", action)
 
-    def add_message(self, player: Player, utterance: str, role: str, **kwargs: Dict):
+    def add_message(self, player: Player, utterance: str, role: str):
         message = {"role": role, "content": utterance}
-        if "image" in kwargs:
-            message['image'] = kwargs['image']
         history = self.messages_by_names[player.descriptor]
         history.append(message)
 
-    def add_user_message(self, player: Player, utterance: str, **kwargs: Dict):
-        self.add_message(player, utterance, role="user", **kwargs)
+    def add_user_message(self, player: Player, utterance: str):
+        self.add_message(player, utterance, role="user")
 
-    def add_assistant_message(self, player: Player, utterance: str, **kwargs: Dict):
-        self.add_message(player, utterance, role="assistant", **kwargs)
+    def add_assistant_message(self, player: Player, utterance: str):
+        self.add_message(player, utterance, role="assistant")
 
     def __validate_parse_and_add_player_response(self, player: Player, utterance: str):
         # todo: it seems we should change the order here: Parse should come first, and then validate.
