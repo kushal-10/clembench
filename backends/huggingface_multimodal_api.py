@@ -180,9 +180,11 @@ def generate_idefics_input(messages: list[Dict]):
     #Create a list containing the prompt text and images specific to idefics input
     #Refer - https://huggingface.co/HuggingFaceM4/idefics-80b-instruct
     idefics_input = [] 
+    idefics_text = ""
     for m in messages:
         if m['role'] == 'user':
             idefics_input.append('\nUser: ' + m['content'])
+            idefics_text += 'User: ' + m['content']
             if 'image' in m.keys():
                 if type(m['image']) == list: # Check if multiple images are passed, append accordingly
                     for im in m['image']:
@@ -191,13 +193,16 @@ def generate_idefics_input(messages: list[Dict]):
                 else:
                     idefics_input.append(m['image'])
             idefics_input.append('<end_of_utterance>')
+            idefics_text += '<end_of_utterance>'
         elif m['role'] == 'assistant':
             idefics_input.append('\nAssistant: ' + m['content'])        
-            idefics_input.append('<end_of_utterance>')    
+            idefics_input.append('<end_of_utterance>')   
+            idefics_text += '\nAssistant: ' + m['content']
+            idefics_text += '<end_of_utterance>'
     idefics_input.append('\nAssistant:')  
     idefics_input = [idefics_input]
 
-    return idefics_input
+    return idefics_input, idefics_text
 
 def generate_idefics_output(messages: list[Dict], 
                             model: IdeficsForVisionText2Text, 
@@ -212,7 +217,7 @@ def generate_idefics_output(messages: list[Dict],
     param processor: Idefics processor
     param device: Processing device - cuda/CPU
     '''
-    idefics_input = generate_idefics_input(messages=messages)
+    idefics_input, _ = generate_idefics_input(messages=messages)
     inputs = processor(idefics_input, add_end_of_utterance_token=False, return_tensors="pt").to(device)
  
     # Generation args for Idefics
@@ -298,9 +303,7 @@ class HuggingfaceMultimodalModel(backends.Model):
             prompt_text = template.render(messages=messages)
         # Get input prompt if model is of type IdeficsForVisionText2Text
         if self.idefics:
-            prompt_text = generate_idefics_input(messages=messages) 
-            print(prompt_text)
-            prompt_text = str(prompt_text)
+            _, prompt_text  = generate_idefics_input(messages=messages) 
 
         # Check context limit
         prompt_tokens = self.processor.tokenizer.tokenize(prompt_text) 
