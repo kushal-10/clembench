@@ -402,6 +402,7 @@ class HuggingfaceMultimodalModel(backends.Model):
                 tokenizer=self.processor, 
                 max_tokens=self.get_max_tokens()
             )
+            print(f"Response : {response}")
             return "", {"response": response}, response
 
         # Generate the output
