@@ -669,9 +669,9 @@
     "custom_chat_template": "{%- for message in messages -%}{% if message['role'] == 'user' %}\nUSER:\n{{message['content']}}{% elif message['role'] == 'assistant' %}\nASSISTANT:{{message['content']}}{% endif %}{% endfor %}\nASSISTANT:"
   },
   {
-    "model_name": "paligemma-3b-mix-448",
+    "model_name": "MiniCPM-Llama3-V-2_5",
     "backend": "huggingface_multimodal",
-    "huggingface_id": "google/paligemma-3b-mix-448",
+    "huggingface_id": "openbmb/MiniCPM-Llama3-V-2_5",
     "trust_remote_code": true,
     "model_type": "Base",
     "output_split_prefix": ""
