@@ -51,7 +51,12 @@ def get_context_limit(model_spec: backends.ModelSpec) -> int:
     hf_model_str = model_spec['huggingface_id']
     
     api_key = get_api_key(model_spec=model_spec)
-    model_config = AutoConfig.from_pretrained(hf_model_str, token=api_key)
+
+    if hasattr(model_spec, 'trust_remote_code'):
+        model_config = AutoConfig.from_pretrained(hf_model_str, trust_remote_code=True)
+    else:
+        model_config = AutoConfig.from_pretrained(hf_model_str, token=api_key)
+        
 
     # Some models have 'max_position_embeddings' others have - 'max_sequence_length' 
     if hasattr(model_config, "text_config"):
@@ -360,6 +365,24 @@ class HuggingfaceMultimodalModel(backends.Model):
         :param log_messages: If True, raw and cleaned messages passed will be logged.
         :return: the continuation
         """
+        # Get a list of images that will be passed to the Processor
+        images = get_images(messages)
+        if self.padding and images:
+            images = pad_images(images)
+
+        # Quick prototype for llama3v
+        if self.llama:
+            response = generate_llama3_output(
+                messages=messages, 
+                images=images, 
+                model=self.multimodal_model, 
+                tokenizer=self.processor, 
+                max_tokens=self.get_max_tokens()
+            )
+            print(f"Response : {response}")
+            return "", {"response": response}, response
+        
+
         # Check to see if game passes multiple images in a single turn
         # Proceed only if model supports multiple images, else return blanks for prompt, response and response_text
         has_multiple_images = check_multiple_image(messages=messages)
@@ -388,22 +411,7 @@ class HuggingfaceMultimodalModel(backends.Model):
                                                 tokens_used=context_check[1], tokens_left=context_check[2],
                                                 context_size=context_check[3]) 
 
-        # Get a list of images that will be passed to the Processor
-        images = get_images(messages)
-        if self.padding and images:
-            images = pad_images(images)
-
-        # Quick prototype for llama3v
-        if self.llama:
-            response = generate_llama3_output(
-                messages=messages, 
-                images=images, 
-                model=self.multimodal_model, 
-                tokenizer=self.processor, 
-                max_tokens=self.get_max_tokens()
-            )
-            print(f"Response : {response}")
-            return "", {"response": response}, response
+        
 
         # Generate the output
         if self.idefics:
