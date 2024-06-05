@@ -673,6 +673,7 @@
     "backend": "huggingface_multimodal",
     "huggingface_id": "openbmb/MiniCPM-Llama3-V-2_5",
     "trust_remote_code": true,
+    "tokenizer": true,
     "model_type": "Base",
     "output_split_prefix": ""
   }
