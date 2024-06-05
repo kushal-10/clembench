@@ -300,9 +300,9 @@ def generate_llama3_output(messages: list[Dict],
 
     # Use a low +ve value for temperature as the model does not generate output when temperature is strictly 0
     if use_system_message:
-        res = model.chat(image=images, msgs=msgs, tokenizer=tokenizer,  max_new_tokens = max_tokens, temperature=0.01, system_prompt='')
+        res = model.chat(image=images, msgs=msgs, tokenizer=tokenizer,  max_new_tokens = max_tokens, sampling=True, temperature=0.01, system_prompt=system_message)
     else:
-        res = model.chat(image=images, msgs=msgs, tokenizer=tokenizer,  max_new_tokens = max_tokens, temperature=0.01)
+        res = model.chat(image=images, msgs=msgs, tokenizer=tokenizer,  max_new_tokens = max_tokens, sampling=True, temperature=0.01)
 
     return res
 
