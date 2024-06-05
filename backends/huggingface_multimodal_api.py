@@ -130,6 +130,7 @@ def load_model(model_spec: backends.ModelSpec):
         model = model_type.from_pretrained(hf_model_str, trust_remote_code=True, torch_dtype=torch.float16) # Load the model, hardcode the torchdtype
     else:
         model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto", token=api_key) # Load the modelc
+        logger.info(f"Device Map: {model.hf_device_map}")
         
 
     # check if model's generation_config has pad_token_id set:
@@ -138,7 +139,6 @@ def load_model(model_spec: backends.ModelSpec):
         model.generation_config.pad_token_id = model.generation_config.eos_token_id #Same as processor.tokenizer.pad_token_id
     
     logger.info(f"Finished loading huggingface model: {model_spec.model_name}")
-    logger.info(f"Device Map: {model.hf_device_map}")
     
     return model
 
