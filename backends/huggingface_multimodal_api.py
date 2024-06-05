@@ -132,7 +132,6 @@ def load_model(model_spec: backends.ModelSpec):
         model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto", token=api_key) # Load the modelc
         logger.info(f"Device Map: {model.hf_device_map}")
         
-
     # check if model's generation_config has pad_token_id set:
     if not model.generation_config.pad_token_id:
         # set pad_token_id to tokenizer's eos_token_id to prevent excessive warnings:
@@ -381,7 +380,6 @@ class HuggingfaceMultimodalModel(backends.Model):
                 tokenizer=self.processor, 
                 max_tokens=self.get_max_tokens()
             )
-            print(f"Response : {response}")
             return "", {"response": response}, response
         
 
