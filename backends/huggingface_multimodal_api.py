@@ -372,6 +372,8 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         # Quick prototype for llama3v
         if self.llama:
+            self.multimodal_model - self.multimodal_model.to(self.device)
+            self.multimodal_model.eval()
             response = generate_llama3_output(
                 messages=messages, 
                 images=images, 
