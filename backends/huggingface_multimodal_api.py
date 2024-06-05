@@ -127,7 +127,7 @@ def load_model(model_spec: backends.ModelSpec):
     api_key = get_api_key(model_spec=model_spec)
 
     if hasattr(model_spec, 'trust_remote_code'):
-        model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto", token=api_key, trust_remote_code=True) # Load the modelc
+        model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto", token=api_key, trust_remote_code=True, torch_dtype=torch.float16) # Load the model, hardcode the torchdtype
     else:
         model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto", token=api_key) # Load the modelc
         
@@ -372,7 +372,6 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         # Quick prototype for llama3v
         if self.llama:
-            self.multimodal_model = self.multimodal_model.to(self.device)
             self.multimodal_model.eval()
             response = generate_llama3_output(
                 messages=messages, 
