@@ -667,5 +667,13 @@
     "model_type": "Vision2Seq",
     "output_split_prefix": "ASSISTANT:",
     "custom_chat_template": "{%- for message in messages -%}{% if message['role'] == 'user' %}\nUSER:\n{{message['content']}}{% elif message['role'] == 'assistant' %}\nASSISTANT:{{message['content']}}{% endif %}{% endfor %}\nASSISTANT:"
+  },
+  {
+    "model_name": "paligemma-3b-mix-448",
+    "backend": "huggingface_multimodal",
+    "huggingface_id": "google/paligemma-3b-mix-448",
+    "trust_remote_code": true,
+    "model_type": "Base",
+    "output_split_prefix": ""
   }
 ]

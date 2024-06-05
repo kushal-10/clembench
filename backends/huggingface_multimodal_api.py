@@ -6,13 +6,14 @@ import torch
 import backends
 from PIL import Image
 import requests
-from transformers import AutoProcessor, AutoModelForVision2Seq, IdeficsForVisionText2Text, AutoConfig
+from transformers import AutoProcessor, AutoModelForVision2Seq, IdeficsForVisionText2Text, AutoModel, AutoConfig, AutoTokenizer
 from jinja2 import Template
 
 # Define a map to load model from transformers Auto Classes
 MODEL_TYPE_MAP = {
         "Idefics": IdeficsForVisionText2Text,
-        "Vision2Seq": AutoModelForVision2Seq
+        "Vision2Seq": AutoModelForVision2Seq,
+        "Base": AutoModel
     }
 
 FALLBACK_CONTEXT_SIZE = 256
@@ -55,6 +56,8 @@ def get_context_limit(model_spec: backends.ModelSpec) -> int:
     # Some models have 'max_position_embeddings' others have - 'max_sequence_length' 
     if hasattr(model_config, "text_config"):
         context = model_config.text_config.max_position_embeddings
+    elif hasattr(model_config, "max_position_embeddings"): # For Llama3v
+        context = model_config.max_position_embeddings
     elif hasattr(model_config, "max_sequence_length"):
         context = model_config.max_sequence_length
     else:
@@ -90,6 +93,10 @@ def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
     '''
     hf_model_str = model_spec['huggingface_id'] # Get the model name
     api_key = get_api_key(model_spec=model_spec)
+
+    if hasattr(model_spec, 'tokenizer'): #Return tokenizer directly, if preprocessor_config file is not available
+        tokenizer = AutoTokenizer.from_pretrained(hf_model_str, trust_remote_code=True) #Use trust remote code by default, generalize later
+        return tokenizer
     
     if hasattr(model_spec, 'not_fast'):
         # Only used by LLaVA 1.6 34B (Throws mismatch <image> token error when use_fast is not set to False)
@@ -114,7 +121,11 @@ def load_model(model_spec: backends.ModelSpec):
 
     api_key = get_api_key(model_spec=model_spec)
 
-    model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto", token=api_key) # Load the model
+    if hasattr(model_spec, 'trust_remote_code'):
+        model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto", token=api_key, trust_remote_code=True) # Load the modelc
+    else:
+        model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto", token=api_key) # Load the modelc
+        
 
     # check if model's generation_config has pad_token_id set:
     if not model.generation_config.pad_token_id:
@@ -256,6 +267,40 @@ def generate_idefics_output(messages: list[Dict],
 
     return generated_text
 
+def generate_llama3_output(messages: list[Dict], 
+                           model: AutoModel, 
+                           tokenizer: AutoTokenizer,
+                           max_tokens: int,
+                           images):
+    '''
+    Return generated text from llama3v model 
+
+    param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
+    param images: A list[Image] type object
+    param model: Idefics model
+    param processor: Idefics processor
+    param device: Processing device - cuda/CPU
+    '''
+    # Separate initial system message
+    msgs = []
+    use_system_message = False
+    first_message =  messages[0]
+    if first_message['role'] == "system":
+        system_message = first_message['content'] # Append system message, if its the first message
+
+    # Filter out other system messages
+    for msg in messages:
+        if msg['role'] != "system":
+            msgs.append(msg)
+
+    # Use a low +ve value for temperature as the model does not generate output when temperature is strictly 0
+    if use_system_message:
+        res = model.chat(image=images, msgs=msgs, tokenizer=tokenizer,  max_new_tokens = max_tokens, temperature=0.01, system_prompt='')
+    else:
+        res = model.chat(image=images, msgs=msgs, tokenizer=tokenizer,  max_new_tokens = max_tokens, temperature=0.01)
+
+    return res
+
 def check_multiple_image(messages: List[Dict]):
     '''
     Return True if a single message contains multiple images
@@ -300,6 +345,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.supports_multiple_images = model_spec_dict.get('supports_multiple_images', False)
         self.padding = model_spec_dict.get('padding', False)
         self.idefics = 'idefics' in model_spec['model_name']
+        self.llama = 'Llama3' in model_spec['model_name']
 
     def generate_response(self, messages: List[Dict]) -> Tuple[Any, Any, str]:
         """
@@ -320,7 +366,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         if has_multiple_images and not self.supports_multiple_images:
             print(f"Multiple images not supported in a single turn for model {self.model_name}")
             return "", {"response": ""}, ""
-
+        
         prompt_text = ""
         # Get input prompt by applying jinja template, if template is provided
         if self.template:
@@ -346,6 +392,17 @@ class HuggingfaceMultimodalModel(backends.Model):
         images = get_images(messages)
         if self.padding and images:
             images = pad_images(images)
+
+        # Quick prototype for llama3v
+        if self.llama:
+            response = generate_llama3_output(
+                messages=messages, 
+                images=images, 
+                model=self.multimodal_model, 
+                tokenizer=self.processor, 
+                max_tokens=self.get_max_tokens()
+            )
+            return "", {"response": response}, response
 
         # Generate the output
         if self.idefics:
