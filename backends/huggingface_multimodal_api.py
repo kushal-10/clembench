@@ -127,7 +127,7 @@ def load_model(model_spec: backends.ModelSpec):
     api_key = get_api_key(model_spec=model_spec)
 
     if hasattr(model_spec, 'trust_remote_code'):
-        model = model_type.from_pretrained(hf_model_str, device_map="auto", token=api_key, trust_remote_code=True, torch_dtype=torch.float16) # Load the model, hardcode the torchdtype
+        model = model_type.from_pretrained(hf_model_str, trust_remote_code=True, torch_dtype=torch.float16) # Load the model, hardcode the torchdtype
     else:
         model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto", token=api_key) # Load the modelc
         
