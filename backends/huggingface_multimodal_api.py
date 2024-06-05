@@ -19,6 +19,22 @@ FALLBACK_CONTEXT_SIZE = 256
 
 logger = backends.get_logger(__name__)
 
+def get_api_key(model_spec: backends.ModelSpec):
+    '''
+    Check if HuggingFace API KEY is required (for gated models llike PaliGemma). If required, i must be added to key.json. A template is provided as key.json.template
+
+    :param model_spec: Contains definitions about the model to be used
+    :return api_key: Value of the api_key/HF_token, else None
+    '''
+    api_key = None
+    if model_spec['requires_api_key']:
+        # load HF API key:
+        creds = backends.load_credentials("huggingface")
+        api_key = creds["huggingface"]["api_key"]
+    
+    return api_key
+
+
 def get_context_limit(model_spec: backends.ModelSpec) -> int:
     '''
     Get the context limit of the model
@@ -27,7 +43,9 @@ def get_context_limit(model_spec: backends.ModelSpec) -> int:
     :return context: Context limit of the model
     '''
     hf_model_str = model_spec['huggingface_id']
-    model_config = AutoConfig.from_pretrained(hf_model_str)
+    
+    api_key = get_api_key(model_spec=model_spec)
+    model_config = AutoConfig.from_pretrained(hf_model_str, token=api_key)
 
     # Some models have 'max_position_embeddings' others have - 'max_sequence_length' 
     if hasattr(model_config, "text_config"):
@@ -66,12 +84,13 @@ def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
     :return processor: Processor for the specific model
     '''
     hf_model_str = model_spec['huggingface_id'] # Get the model name
-   
+    api_key = get_api_key(model_spec=model_spec)
+    
     if hasattr(model_spec, 'not_fast'):
         # Only used by LLaVA 1.6 34B (Throws mismatch <image> token error when use_fast is not set to False)
-        processor = AutoProcessor.from_pretrained(hf_model_str, use_fast=False, device_map="auto", verbose=False)
+        processor = AutoProcessor.from_pretrained(hf_model_str, use_fast=False, device_map="auto", verbose=False, token=api_key)
     else:
-        processor = AutoProcessor.from_pretrained(hf_model_str, device_map="auto", verbose=False)
+        processor = AutoProcessor.from_pretrained(hf_model_str, device_map="auto", verbose=False, token=api_key)
     logger.info(f'Loading Processor for model : {model_spec.model_name}')
 
     return processor
@@ -88,7 +107,9 @@ def load_model(model_spec: backends.ModelSpec):
 
     model_type = MODEL_TYPE_MAP[model_spec['model_type']] # Use the appropriate Auto class to  load the model 
 
-    model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto") # Load the model
+    api_key = get_api_key(model_spec=model_spec)
+
+    model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto", token=api_key) # Load the model
 
     # check if model's generation_config has pad_token_id set:
     if not model.generation_config.pad_token_id:
