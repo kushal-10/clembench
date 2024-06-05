@@ -27,7 +27,12 @@ def get_api_key(model_spec: backends.ModelSpec):
     :return api_key: Value of the api_key/HF_token, else None
     '''
     api_key = None
-    if model_spec['requires_api_key']:
+
+    #Type cast model_spec to a Dictionary, for cleaner loading of variables
+    model_spec_dict = vars(model_spec)
+    use_api_key = model_spec_dict.get('requires_api_key', None)
+
+    if use_api_key:
         # load HF API key:
         creds = backends.load_credentials("huggingface")
         api_key = creds["huggingface"]["api_key"]
