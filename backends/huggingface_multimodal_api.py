@@ -21,12 +21,12 @@ FALLBACK_CONTEXT_SIZE = 256
 logger = backends.get_logger(__name__)
 
 def get_context_limit(model_spec: backends.ModelSpec) -> int:
-    '''
+    """
     Get the context limit of the model
 
     :param model_spec: Contains definitions about the model to be used
     :return context: Context limit of the model
-    '''
+    """
     hf_model_str = model_spec['huggingface_id']
     model_config = AutoConfig.from_pretrained(hf_model_str)
 
@@ -63,12 +63,12 @@ def check_context_limit(context_size: int, prompt_tokens: list, max_new_tokens: 
 
 
 def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
-    '''
+    """
     Load processor from AutoProcessor a specific model (Example - LlavaProcessor)
 
     :param model_spec: A dictionary that defines the model to be used, loaded from Model Registry
     :return processor: Processor for the specific model
-    '''
+    """
     hf_model_str = model_spec['huggingface_id']  # Get the model name
 
     if hasattr(model_spec, 'not_fast'):
@@ -82,12 +82,12 @@ def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
 
 
 def load_model(model_spec: backends.ModelSpec):
-    '''
+    """
     Load a specific model
 
     :param model_spec: A dictionary that defines the model to be used, loaded from Model Registry
     :return model: The specific model
-    '''
+    """
     logger.info(f'Start loading huggingface model weights: {model_spec.model_name}')
     hf_model_str = model_spec['huggingface_id']  # Get the model name
 
@@ -106,39 +106,13 @@ def load_model(model_spec: backends.ModelSpec):
     return model
 
 
-def pad_images(images):
-    '''
-    Pad the images. Only used for LLaVA NeXT models
-    Will be deprecated when issue https://github.com/huggingface/transformers/issues/29832 is closed
-    '''
-    # Determine the maximum width and height among all images
-    max_width = max(image.size[0] for image in images)
-    max_height = max(image.size[1] for image in images)
-
-    # Create and return a list of padded images
-    padded_images = []
-    for image in images:
-        # Create a new image with a black background
-        new_image = Image.new("RGB", (max_width, max_height))
-
-        # Calculate the position to paste the image so that it's centered
-        x = (max_width - image.size[0]) // 2
-        y = (max_height - image.size[1]) // 2
-
-        # Paste the original image onto the new image
-        new_image.paste(image, (x, y))
-        padded_images.append(new_image)
-
-    return padded_images
-
-
 def load_image(image: str):
-    '''
+    """
     Load an image based on a given local path or URL
 
     :param image: Image path/url
     :return loaded_image: PIL Image
-    '''
+    """
 
     if image.startswith('http') or image.startswith('https'):
         image = Image.open(requests.get(image, stream=True).raw).convert('RGB')
@@ -149,12 +123,12 @@ def load_image(image: str):
 
 
 def get_images(messages: list[Dict]) -> list:
-    '''
+    """
     Return loaded images from messages
 
     :param messages: A list of messages passed to the model
     :return images: A list of PIL Image objects.
-    '''
+    """
     # Collect image links/file locations mentioned in messages
     images = []
     for message in messages:
@@ -182,11 +156,11 @@ def get_images(messages: list[Dict]) -> list:
 # Separate Input and Output generation for Idefics
 # Input is required for context check
 def generate_idefics_input(messages: list[Dict]):
-    '''
+    """
     Return inputs specific to the format of Idefics
 
     param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
-    '''
+    """
     # Create a list containing the prompt text and images specific to Idefics input
     # Refer - https://huggingface.co/HuggingFaceM4/idefics-80b-instruct
 
@@ -223,14 +197,14 @@ def generate_idefics_output(messages: list[Dict],
                             processor: AutoProcessor,
                             max_tokens: int,
                             device) -> list[str]:
-    '''
+    """
     Return generated text from Idefics model
 
     param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
     param model: Idefics model
     param processor: Idefics processor
     param device: Processing device - cuda/CPU
-    '''
+    """
     idefics_input, _ = generate_idefics_input(messages=messages)
     inputs = processor(idefics_input, add_end_of_utterance_token=False, return_tensors="pt").to(device)
 
@@ -238,7 +212,6 @@ def generate_idefics_output(messages: list[Dict],
     exit_condition = processor.tokenizer("<end_of_utterance>", add_special_tokens=False).input_ids
     bad_words_ids = processor.tokenizer(["<image>", "<fake_token_around_image>"], add_special_tokens=False).input_ids
 
-    # max_input_tokens = 2048  # Default value for arg max_length = 20 -> set to its maximum value
     generated_ids = model.generate(**inputs, eos_token_id=exit_condition, bad_words_ids=bad_words_ids,
                                    max_new_tokens=max_tokens)
     generated_text = processor.batch_decode(generated_ids)
@@ -247,10 +220,10 @@ def generate_idefics_output(messages: list[Dict],
 
 
 def check_multiple_image(messages: List[Dict]):
-    '''
+    """
     Return True if a single message contains multiple images
     param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
-    '''
+    """
     has_multiple_images = False
     for msg in messages:
         if 'image' in msg and type(msg['image']) == list:
@@ -333,8 +306,6 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         # Get a list of images [as input to the Processor]
         images = get_images(messages)
-        # if self.padding and images:
-        #     images = pad_images(images)
 
         # Generate the output
         if self.idefics:
