@@ -333,8 +333,8 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         # Get a list of images [as input to the Processor]
         images = get_images(messages)
-        if self.padding and images:
-            images = pad_images(images)
+        # if self.padding and images:
+        #     images = pad_images(images)
 
         # Generate the output
         if self.idefics:
