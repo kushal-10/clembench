@@ -1,5 +1,5 @@
 """
-Backend using HuggingFace transformers for ungated multimodal models.
+Backend using HuggingFace transformers for open-weight multimodal models.
 """
 from typing import List, Dict, Tuple, Any
 import torch
@@ -10,6 +10,7 @@ from transformers import AutoProcessor, AutoModelForVision2Seq, IdeficsForVision
 from jinja2 import Template
 
 # Define a map to load model from transformers Auto Classes
+# IdeficsForVisionText2Text is not yet supported by any Auto Class
 MODEL_TYPE_MAP = {
     "Idefics": IdeficsForVisionText2Text,
     "Vision2Seq": AutoModelForVision2Seq
@@ -18,7 +19,6 @@ MODEL_TYPE_MAP = {
 FALLBACK_CONTEXT_SIZE = 256
 
 logger = backends.get_logger(__name__)
-
 
 def get_context_limit(model_spec: backends.ModelSpec) -> int:
     '''
@@ -134,7 +134,7 @@ def pad_images(images):
 
 def load_image(image: str):
     '''
-    Load an image based on if its a local path or URL
+    Load an image based on a given local path or URL
 
     :param image: Image path/url
     :return loaded_image: PIL Image
@@ -165,7 +165,8 @@ def get_images(messages: list[Dict]) -> list:
             else:
                 images.append(message['image'])
 
-    # Return None if no image is passed - Use AutoTokenizer to generate output and not AutoProcessor
+    # Return None if no image is passed
+    # Use AutoTokenizer to generate output and not AutoProcessor, as only text is passed.
     if not images:
         return None
 
@@ -186,8 +187,11 @@ def generate_idefics_input(messages: list[Dict]):
 
     param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
     '''
-    # Create a list containing the prompt text and images specific to idefics input
+    # Create a list containing the prompt text and images specific to Idefics input
     # Refer - https://huggingface.co/HuggingFaceM4/idefics-80b-instruct
+
+    # Use idefics_input as is for input to the model
+    # Use idefics_text, that contains everything from idefics_input, apart from image_urls/loaded_image, used for context check
     idefics_input = []
     idefics_text = ""
     for m in messages:
@@ -234,7 +238,7 @@ def generate_idefics_output(messages: list[Dict],
     exit_condition = processor.tokenizer("<end_of_utterance>", add_special_tokens=False).input_ids
     bad_words_ids = processor.tokenizer(["<image>", "<fake_token_around_image>"], add_special_tokens=False).input_ids
 
-    max_input_tokens = 2048  # Default value for input max length = 20, set a high value for now
+    max_input_tokens = 2048  # Default value for arg max_length = 20 -> set to its maximum value
     generated_ids = model.generate(**inputs, eos_token_id=exit_condition, bad_words_ids=bad_words_ids,
                                    max_length=max_input_tokens)
     generated_text = processor.batch_decode(generated_ids)
@@ -296,8 +300,6 @@ class HuggingfaceMultimodalModel(backends.Model):
                     {"role": "user", "content": "This seems correct."},
                     {'role': 'user', 'content': 'Are there any chickens in the image? Answer with only "Yes" or "No".', 'image': 'games/cloudgame/resources/images/3.jpg'}
                 ]
-        :param model: model name
-        :param log_messages: If True, raw and cleaned messages passed will be logged.
         :return: the continuation
         """
         # Check to see if game passes multiple images in a single turn
@@ -313,11 +315,12 @@ class HuggingfaceMultimodalModel(backends.Model):
             template_str = self.template
             template = Template(template_str)
             prompt_text = template.render(messages=messages)
+
         # Get input prompt if model is of type IdeficsForVisionText2Text
         if self.idefics:
             _, prompt_text = generate_idefics_input(messages=messages)
 
-            # Check context limit
+        # Check context limit
         prompt_tokens = self.processor.tokenizer.tokenize(prompt_text)
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
         if not context_check[0]:  # if context is exceeded, context_check[0] is False
@@ -328,7 +331,7 @@ class HuggingfaceMultimodalModel(backends.Model):
                                                 tokens_used=context_check[1], tokens_left=context_check[2],
                                                 context_size=context_check[3])
 
-            # Get a list of images that will be passed to the Processor
+        # Get a list of images [as input to the Processor]
         images = get_images(messages)
         if self.padding and images:
             images = pad_images(images)
@@ -342,7 +345,7 @@ class HuggingfaceMultimodalModel(backends.Model):
                                                      device=self.device)
 
         else:
-            if not images:  # If no images are present in the history + current uttereance, use tokenizer to get inputs
+            if not images:  # If no images are present in the history + current utterance, use tokenizer to get inputs
                 inputs = self.processor.tokenizer(prompt_text, return_tensors="pt").to(self.device)
             else:
                 inputs = self.processor(prompt_text, images=images, return_tensors="pt").to(self.device)
