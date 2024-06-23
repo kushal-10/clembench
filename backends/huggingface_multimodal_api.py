@@ -238,9 +238,9 @@ def generate_idefics_output(messages: list[Dict],
     exit_condition = processor.tokenizer("<end_of_utterance>", add_special_tokens=False).input_ids
     bad_words_ids = processor.tokenizer(["<image>", "<fake_token_around_image>"], add_special_tokens=False).input_ids
 
-    max_input_tokens = 2048  # Default value for arg max_length = 20 -> set to its maximum value
+    # max_input_tokens = 2048  # Default value for arg max_length = 20 -> set to its maximum value
     generated_ids = model.generate(**inputs, eos_token_id=exit_condition, bad_words_ids=bad_words_ids,
-                                   max_length=max_input_tokens)
+                                   max_input_tokens=max_tokens)
     generated_text = processor.batch_decode(generated_ids)
 
     return generated_text
