@@ -240,7 +240,7 @@ def generate_idefics_output(messages: list[Dict],
 
     # max_input_tokens = 2048  # Default value for arg max_length = 20 -> set to its maximum value
     generated_ids = model.generate(**inputs, eos_token_id=exit_condition, bad_words_ids=bad_words_ids,
-                                   max_input_tokens=max_tokens)
+                                   max_new_tokens=max_tokens)
     generated_text = processor.batch_decode(generated_ids)
 
     return generated_text
