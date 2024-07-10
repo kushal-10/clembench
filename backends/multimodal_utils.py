@@ -34,6 +34,7 @@ def get_intern_inputs(messages: list[Dict]):
                         image_counter += 1
                         prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
                         image.append(img)
+                        print(f"Printing image {img}")
                 else:
                     print("Please pass a valid value of image in the message - Either a str or List[str]")
 
