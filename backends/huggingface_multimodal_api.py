@@ -81,7 +81,7 @@ def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
         # Only used by LLaVA 1.6 34B (Throws mismatch <image> token error when use_fast is not set to False)
         processor = AutoProcessor.from_pretrained(hf_model_str, use_fast=False, device_map="auto", verbose=False)
     elif hasattr(model_spec, 'trust_remote_code'):
-        processor = AutoTokenizer.from_pretrained(hf_model_str, device_map="auto", verbose=False, trust_remote_code=True)
+        processor = AutoTokenizer.from_pretrained(hf_model_str, verbose=False, trust_remote_code=True)
     else:
         processor = AutoProcessor.from_pretrained(hf_model_str, device_map="auto", verbose=False)
     logger.info(f'Loading Processor for model : {model_spec.model_name}')
@@ -102,7 +102,7 @@ def load_model(model_spec: backends.ModelSpec):
     model_type = MODEL_TYPE_MAP[model_spec['model_type']]  # Use the appropriate Auto class to  load the model
 
     if hasattr(model_spec, 'trust_remote_code'):
-        model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype=torch.bfloat16, trust_remote_code=True)  # Load the model
+        model = model_type.from_pretrained(hf_model_str, torch_dtype=torch.bfloat16, trust_remote_code=True)  # Load the model
     else:
         model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto")
 
@@ -278,6 +278,7 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         if self.intern:
             print("Using InternLM")
+            self.multimodal_model = self.multimodal_model.cuda().eval()
             self.multimodal_model.tokenizer = self.processor
 
     def generate_response(self, messages: List[Dict]) -> Tuple[Any, Any, str]:
