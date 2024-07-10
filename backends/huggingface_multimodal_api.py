@@ -112,7 +112,10 @@ def load_model(model_spec: backends.ModelSpec):
         model.generation_config.pad_token_id = model.generation_config.eos_token_id  # Same as processor.tokenizer.pad_token_id
 
     logger.info(f"Finished loading huggingface model: {model_spec.model_name}")
-    logger.info(f"Device Map: {model.hf_device_map}")
+
+    if hasattr(model, 'device_map'):
+        logger.info(f"Device Map: {model.hf_device_map}")
+
 
     return model
 
