@@ -23,10 +23,12 @@ def get_intern_inputs(messages: list[Dict]):
             if 'image' in m:
                 if isinstance(m['image'], str):
                     # A single image is passed
+                    print("Image is a string")
                     image_counter += 1
                     prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
                     image.append(m['image'])
                 elif isinstance(m['image'], list):
+                    print("Image is a list")
                     # A list of images is passed
                     for img in m['image']:
                         image_counter += 1
@@ -48,6 +50,7 @@ def generate_intern_response(messages: list[Dict], model, tokenizer):
 
     prompt, history, image = get_intern_inputs(messages)
     print(f"INPUT PRROOOOOOOOOOOMMMMMMMMPPPPPPPPPPPPPPTTTTTTTTTTTTTTT {prompt}")
+    print(f"INPUT IMAGE : {image}")
     torch.set_grad_enabled(False)
 
     # init model and tokenizer
