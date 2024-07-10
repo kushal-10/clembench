@@ -9,7 +9,7 @@ import requests
 from transformers import AutoProcessor, AutoModelForVision2Seq, IdeficsForVisionText2Text, AutoConfig, AutoModel, AutoTokenizer
 from jinja2 import Template
 
-form backends.multimodal_utils import generate_intern_response
+from backends.multimodal_utils import generate_intern_response
 
 # Define a map to load model from transformers Auto Classes
 # IdeficsForVisionText2Text is not yet supported by any Auto Class

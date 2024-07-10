@@ -47,6 +47,7 @@ def get_intern_inputs(messages: list[Dict]):
 def generate_intern_response(messages: list[Dict], model, tokenizer):
 
     prompt, history, image = get_intern_inputs(messages)
+    print(f"INPUT PRROOOOOOOOOOOMMMMMMMMPPPPPPPPPPPPPPTTTTTTTTTTTTTTT {prompt}")
     torch.set_grad_enabled(False)
 
     # init model and tokenizer
@@ -62,5 +63,5 @@ def generate_intern_response(messages: list[Dict], model, tokenizer):
         # Unset top_p manually to avoid the following warning
         #  UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
     print(response)
-
+    print(f"RRRRRRREEEEEEEEEEEEEEEEEEEESSSSSSPPPPOOONNNSEEEEEEEEE: {response}")
     return response, prompt
