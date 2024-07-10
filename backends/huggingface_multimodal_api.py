@@ -6,14 +6,17 @@ import torch
 import backends
 from PIL import Image
 import requests
-from transformers import AutoProcessor, AutoModelForVision2Seq, IdeficsForVisionText2Text, AutoConfig
+from transformers import AutoProcessor, AutoModelForVision2Seq, IdeficsForVisionText2Text, AutoConfig, AutoModel, AutoTokenizer
 from jinja2 import Template
+
+form backends.multimodal_utils import generate_intern_response
 
 # Define a map to load model from transformers Auto Classes
 # IdeficsForVisionText2Text is not yet supported by any Auto Class
 MODEL_TYPE_MAP = {
     "Idefics": IdeficsForVisionText2Text,
-    "Vision2Seq": AutoModelForVision2Seq
+    "Vision2Seq": AutoModelForVision2Seq,
+    "Intern": AutoModel
 }
 
 FALLBACK_CONTEXT_SIZE = 256
@@ -28,7 +31,11 @@ def get_context_limit(model_spec: backends.ModelSpec) -> int:
     :return context: Context limit of the model
     """
     hf_model_str = model_spec['huggingface_id']
-    model_config = AutoConfig.from_pretrained(hf_model_str)
+
+    if hasattr(model_spec, 'trust_remote_code'):
+        model_config = AutoConfig.from_pretrained(hf_model_str, trust_remote_code=True)
+    else:
+        model_config = AutoConfig.from_pretrained(hf_model_str)
 
     # Some models have 'max_position_embeddings' others have - 'max_sequence_length'
     if hasattr(model_config, "text_config"):
@@ -42,8 +49,7 @@ def get_context_limit(model_spec: backends.ModelSpec) -> int:
     return context
 
 
-def check_context_limit(context_size: int, prompt_tokens: list, max_new_tokens: int = 100) -> Tuple[
-    bool, int, int, int]:
+def check_context_limit(context_size: int, prompt_tokens: list, max_new_tokens: int = 100) -> Tuple[bool, int, int, int]:
     """
     External context limit check
     :param context_size: max_sequence_length/max_position_embeddings of the model
@@ -74,6 +80,8 @@ def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
     if hasattr(model_spec, 'not_fast'):
         # Only used by LLaVA 1.6 34B (Throws mismatch <image> token error when use_fast is not set to False)
         processor = AutoProcessor.from_pretrained(hf_model_str, use_fast=False, device_map="auto", verbose=False)
+    elif hasattr(model_spec, 'trust_remote_code'):
+        processor = AutoTokenizer.from_pretrained(hf_model_str, device_map="auto", verbose=False, trust_remote_code=True)
     else:
         processor = AutoProcessor.from_pretrained(hf_model_str, device_map="auto", verbose=False)
     logger.info(f'Loading Processor for model : {model_spec.model_name}')
@@ -93,7 +101,10 @@ def load_model(model_spec: backends.ModelSpec):
 
     model_type = MODEL_TYPE_MAP[model_spec['model_type']]  # Use the appropriate Auto class to  load the model
 
-    model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto")  # Load the model
+    if hasattr(model_spec, 'trust_remote_code'):
+        model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype=torch.bfloat16, trust_remote_code=True)  # Load the model
+    else:
+        model = model_type.from_pretrained(hf_model_str, device_map="auto", torch_dtype="auto")
 
     # check if model's generation_config has pad_token_id set:
     if not model.generation_config.pad_token_id:
@@ -263,6 +274,11 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.supports_multiple_images = model_spec_dict.get('supports_multiple_images', False)
         self.padding = model_spec_dict.get('padding', False)
         self.idefics = 'idefics' in model_spec['model_name']
+        self.intern = 'intern' in model_spec['model_name']
+
+        if self.intern:
+            print("Using InternLM")
+            self.multimodal_model.tokenizer = self.processor
 
     def generate_response(self, messages: List[Dict]) -> Tuple[Any, Any, str]:
         """
@@ -275,6 +291,13 @@ class HuggingfaceMultimodalModel(backends.Model):
                 ]
         :return: the continuation
         """
+        ## Testing InternLM
+        if self.intern:
+            response, prompt = generate_intern_response(messages, self.multimodal_model, self.processor)
+            response = response.strip()
+            return prompt, {"response": response}, response
+
+
         # Check to see if game passes multiple images in a single turn
         # Proceed only if model supports multiple images, else return blanks for prompt, response and response_text
         has_multiple_images = check_multiple_image(messages=messages)
