@@ -4,9 +4,6 @@ Backend for open-weight multimodal models.
 """
 from typing import List, Dict, Tuple, Any
 import torch
-from PIL import Image
-import requests
-from jinja2 import Template
 from transformers import (AutoProcessor, AutoModelForVision2Seq, IdeficsForVisionText2Text,
                           AutoConfig, AutoModel, AutoTokenizer)
 
@@ -136,6 +133,14 @@ def check_multiple_image(messages: List[Dict]) -> bool:
     :return: True if any message contains multiple images, otherwise False.
     """
     return any('image' in msg and isinstance(msg['image'], list) and len(msg['image']) > 1 for msg in messages)
+
+
+class HuggingfaceMultimodal(backends.Backend):
+    def __init__(self):
+        super().__init__()
+
+    def get_model_for(self, model_spec: backends.ModelSpec) -> backends.Model:
+        return HuggingfaceMultimodalModel(model_spec)
 
 
 class HuggingfaceMultimodalModel(backends.Model):
