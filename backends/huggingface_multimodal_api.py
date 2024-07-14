@@ -9,18 +9,20 @@ from transformers import (AutoProcessor, AutoModelForVision2Seq, IdeficsForVisio
 
 import backends
 from backends.multimodal_utils.llava_utils import generate_llava_inputs, get_llava_response
+from backends.multimodal_utils.intern_utils import get_intern_inputs, generate_intern_response
 
-## Basic Utils ######################################
+# CONSTANTS
 MODEL_LOADER_MAP = {
     "Idefics": IdeficsForVisionText2Text,
     "Vision2Seq": AutoModelForVision2Seq,
     "Intern": AutoModel
 }
-FALLBACK_CONTEXT_SIZE = 256
-#####################################################
 
+FALLBACK_CONTEXT_SIZE = 256
 logger = backends.get_logger(__name__)
-################# CONTEXT UTILS ########################################################################
+
+
+# CONTEXT UTILS
 def get_context_limit(model_spec: backends.ModelSpec) -> int:
     """
     Get the context limit of the model.
@@ -44,6 +46,7 @@ def get_context_limit(model_spec: backends.ModelSpec) -> int:
     return context
 
 
+# CONTEXT UTILS
 def check_context_limit(context_size: int, prompt_tokens: list, max_new_tokens: int = 100) -> Tuple[bool, int, int, int]:
     """
     External context limit check
@@ -63,7 +66,7 @@ def check_context_limit(context_size: int, prompt_tokens: list, max_new_tokens: 
     return fits, tokens_used, tokens_left, context_size
 
 
-############# MODEL UTILS #########################################################################
+# MODEL UTILS
 def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
     """
     Load processor from AutoProcessor for a specific model (Example - LlavaProcessor).
@@ -74,8 +77,9 @@ def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
     hf_model_str = model_spec['huggingface_id']  # Get the model name
 
     use_fast = not getattr(model_spec, 'not_fast', False)
+    use_tokenizer = getattr(model_spec, 'tokenizer', False)
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
-    processor_class = AutoProcessor if use_fast else AutoTokenizer
+    processor_class = AutoProcessor if use_tokenizer else AutoTokenizer
 
     processor = processor_class.from_pretrained(
         hf_model_str,
@@ -85,10 +89,11 @@ def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
         trust_remote_code=trust_remote_code
     )
 
-    logger.info(f'Loading Processor for model : {model_spec.model_name}')
+    logger.info(f'Loading {processor_class} for model : {model_spec.model_name}')
     return processor
 
 
+# MODEL UTILS
 def load_model(model_spec: backends.ModelSpec):
     """
     Load a specific model.
@@ -125,6 +130,7 @@ def load_model(model_spec: backends.ModelSpec):
     return model
 
 
+# BACKEND UTILS
 def check_multiple_image(messages: List[Dict]) -> bool:
     """
     Return True if a single message contains multiple images.
@@ -188,7 +194,11 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         # Get input prompt by applying jinja template, if template is provided
         # prompt_text = ## Get Input String for counting tokens?
-        prompt_text, images = generate_llava_inputs(messages, self.template)
+        if 'intern' in self.model_name:
+            prompt, history, images = get_intern_inputs(messages)
+            prompt_text = prompt + history
+        else:
+            prompt_text, images = generate_llava_inputs(messages, self.template)
 
         # Check context limit
         prompt_tokens = self.processor.tokenizer.tokenize(prompt_text)
@@ -205,8 +215,11 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         # Based on this input_prompt, return response, response_text for each model
         # Store generated text
-        response, response_text = get_llava_response(prompt_text, images, self.processor, self.multimodal_model,
-                                                     self.get_max_tokens(), self.device, self.split_prefix, self.cull)
+        if 'intern' in self.model_name:
+            response, response_text = generate_intern_response(prompt, history, images, self.multimodal_model, self.processor)
+        else:
+            response, response_text = get_llava_response(prompt_text, images, self.processor, self.multimodal_model,
+                                                         self.get_max_tokens(), self.device, self.split_prefix, self.cull)
 
         print(f"################################################ TESTING RESPONSE #############################################################")
         print(f"INPUT: {prompt} \n RESPONSE: {response}\n RESPONSE TEXT: {response_text}")
