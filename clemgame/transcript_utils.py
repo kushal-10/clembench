@@ -134,6 +134,10 @@ def build_transcript(interactions: Dict, experiment_config: Dict, game_instance:
                             image_src = os.path.join(os.environ["IMAGE_ROOT"], image_src)
                         else:
                             image_src = os.path.join(project_root, image_src)
+
+                    if not isinstance(image_src, list):
+                        image_src = [image_src]
+
                     transcript += (f'  <a title="{image_src}">'
                                    f'<img style="width:100%" src="{image_src}" alt="{image_src}" />'
                                    f'</a>\n')
