@@ -196,7 +196,10 @@ class HuggingfaceMultimodalModel(backends.Model):
         # prompt_text = ## Get Input String for counting tokens?
         if 'intern' in self.model_name:
             prompt, history, images = get_intern_inputs(messages)
-            prompt_text = prompt + history
+            collect_history = ""
+            for h in history:
+                collect_history += h[0] + h[1]
+            prompt_text = prompt + collect_history
         else:
             prompt_text, images = generate_llava_inputs(messages, self.template)
 
