@@ -297,7 +297,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         """
         ## Testing InternLM
         if self.intern:
-            response, prompt = generate_intern_response(messages, self.multimodal_model, self.processor)
+            response, prompt = generate_intern_response(messages, self.multimodal_model, self.processor, self.device)
             response = response.strip()
 
             prompt_return = {"inputs": prompt, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
