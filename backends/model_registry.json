@@ -769,7 +769,6 @@
     "model_type": "Vision2Seq",
     "output_split_prefix": "assistant",
     "not_fast": true,
-    "padding": true,
     "custom_chat_template": "<|im_start|>system\nAnswer the questions.<|im_end|>{%- for message in messages -%}{% if message['role'] == 'user' %}{% if message['image']%}<|im_start|>user\n<image>\n{{message['content']}}<|im_end|>{% else %}<|im_start|>\nuser\n{{message['content']}}<|im_end|>{% endif %}{% elif message['role'] == 'assistant' %}<|im_start|>assistant\n{{message['content']}}<|im_end|>{% endif %}{% endfor %}<|im_start|>assistant\n"
   },
   {
@@ -778,7 +777,6 @@
     "huggingface_id": "llava-hf/llava-v1.6-mistral-7b-hf",
     "model_type": "Vision2Seq",
     "output_split_prefix": "[/INST]",
-    "padding": true,
     "custom_chat_template": "{% for message in messages %}{% if message['role'] == 'user' %}{% if message['image']%}[INST] <image>\n{{message['content']}} [/INST]{% else %}[INST]\n{{message['content']}} [/INST]{% endif %}{% elif message['role'] == 'assistant' %}{{message['content']}}{% endif %}{% endfor %}"
   },
   {
@@ -787,7 +785,6 @@
     "huggingface_id": "llava-hf/llava-v1.6-vicuna-13b-hf",
     "model_type": "Vision2Seq",
     "output_split_prefix": "ASSISTANT:",
-    "padding": true,
     "custom_chat_template": "A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.{% for message in messages %}{% if message['role'] == 'user' %}{% if message['image'] %}USER:<image>\n{{message['content']}}{% else %}USER:\n{{message['content']}}{% endif %}{% elif message['role'] == 'assistant' %}ASSISTANT:{{message['content']}}{% endif %}{% endfor %}ASSISTANT:"
   },
   {
@@ -796,7 +793,6 @@
     "huggingface_id": "llava-hf/llava-v1.6-vicuna-7b-hf",
     "model_type": "Vision2Seq",
     "output_split_prefix": "ASSISTANT:",
-    "padding": true,
     "custom_chat_template": "A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.{% for message in messages %}{% if message['role'] == 'user' %}{% if message['image'] %}USER:<image>\n{{message['content']}}{% else %}USER:\n{{message['content']}}{% endif %}{% elif message['role'] == 'assistant' %}ASSISTANT:{{message['content']}}{% endif %}{% endfor %}ASSISTANT:"
   },
   {
@@ -824,6 +820,7 @@
     "model_type": "Intern",
     "supports_multiple_images": true,
     "trust_remote_code": true,
+    "use_bf16": true,
     "output_split_prefix": ""
   }
 ]
