@@ -54,6 +54,7 @@ def generate_intern_response(prompt, history, image, model, tokenizer):
     with torch.autocast(device_type='cuda', dtype=torch.float16):
         response, his = model.chat(tokenizer, prompt, image, do_sample=False, top_p=1, num_beams=3, history=history,
                                    use_meta=True).cuda().eval()
+        print(tokenizer)
         # Unset top_p manually to avoid the following warning
         # UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
 
