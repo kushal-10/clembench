@@ -203,4 +203,6 @@ class HuggingfaceMultimodalModel(backends.Model):
         response, response_text = get_llava_response(prompt_text, images, self.processor, self.multimodal_model,
                                                      self.get_max_tokens(), self.device, self.split_prefix, self.cull)
 
+        print(f"################################################ TESTING RESPONSE #############################################################")
+        print(f"INPUT: {prompt} \n RESPONSE: {response}\n RESPONSE TEXT: {response_text}")
         return prompt, response, response_text
