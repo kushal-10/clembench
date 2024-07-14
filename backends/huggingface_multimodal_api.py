@@ -221,7 +221,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         # Store generated text
         if 'intern' in self.model_name:
             print(f"Prompt: {prompt} \n History: {history} \n Images: {images} ")
-            print(f"Model : {self.multimodal_model == True}, Tokenizer : {self.processor == True}")
+            print(f"Model : {self.multimodal_model}, Tokenizer : {self.processor}")
             response, response_text = generate_intern_response(prompt, history, images, self.multimodal_model, self.processor)
         else:
             response, response_text = get_llava_response(prompt_text, images, self.processor, self.multimodal_model,
