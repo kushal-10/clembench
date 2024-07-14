@@ -200,11 +200,12 @@ class HuggingfaceMultimodalModel(backends.Model):
             for h in history:
                 collect_history += h[0] + h[1]
             prompt_text = prompt + collect_history
+            prompt_tokens = self.processor.tokenize(prompt_text)
         else:
             prompt_text, images = generate_llava_inputs(messages, self.template)
+            prompt_tokens = self.processor.tokenizer.tokenize(prompt_text)
 
         # Check context limit
-        prompt_tokens = self.processor.tokenizer.tokenize(prompt_text)
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
         if not context_check[0]:  # if context is exceeded, context_check[0] is False
             logger.info(f"Context token limit for {self.model_spec.model_name} exceeded: "
