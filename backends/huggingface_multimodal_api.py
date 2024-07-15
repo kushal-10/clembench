@@ -200,24 +200,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         model_response = RESPONSE_MAP[self.model_type]
 
         kwargs = {"template": self.template}
-        prompt_text, image, additions = model_response.prepeare_inputs(messages, **kwargs)
+        prompt_text, image, additions = model_response.prepare_inputs(messages, **kwargs)
         prompt_tokens = model_response.get_tokens(prompt_text, self.processor, **additions)
-
-
-        """
-        # Get input prompt by applying jinja template, if template is provided
-        # prompt_text = ## Get Input String for counting tokens?
-        if 'intern' in self.model_name:
-            prompt, history, images = get_intern_inputs(messages)
-            collect_history = ""
-            for h in history:
-                collect_history += h[0] + h[1]
-            prompt_text = prompt + collect_history
-            prompt_tokens = self.processor.tokenize(prompt_text)
-        else:
-            prompt_text, images = generate_llava_inputs(messages, self.template)
-            prompt_tokens = 
-        """
 
         # Check context limit
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
@@ -231,21 +215,6 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
 
-
-        """
-        # Based on this input_prompt, return response, response_text for each model
-        # Store generated text
-        if 'intern' in self.model_name:
-            response, response_text = generate_intern_response(prompt=prompt, history=history, image=images,
-                                                               model=self.multimodal_model, tokenizer=self.processor)
-        else:
-            response, response_text = get_llava_response(prompt_text, images, self.processor, self.multimodal_model,
-                                                         self.get_max_tokens(), self.device, self.split_prefix, self.cull)
-
-        print(f"################################################ TESTING RESPONSE #############################################################")
-        print(f"INPUT: {prompt} \n RESPONSE: {response}\n RESPONSE TEXT: {response_text}")
-        """
-
         response, response_text = model_response.generate_output(prompt_text, image, self.multimodal_model, self.processor, **additions)
-
+        print(f"TESTING RESPONSE ##################### \n {response} \n #############################")
         return prompt, response, response_text
