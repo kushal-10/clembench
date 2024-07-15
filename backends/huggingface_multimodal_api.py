@@ -220,7 +220,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         # Based on this input_prompt, return response, response_text for each model
         # Store generated text
         if 'intern' in self.model_name:
-            # print(f"Prompt: {prompt} \n History: {history} \n Images: {images} ")
+            print(f"Prompt: {prompt} \n History: {history} \n Images: {images} ")
             # print(f"Model : {self.multimodal_model}, Tokenizer : {self.processor}")
             response, response_text = generate_intern_response(prompt, history, images, self.multimodal_model, self.processor)
         else:
