@@ -108,21 +108,14 @@ def load_model(model_spec: backends.ModelSpec):
 
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
     use_bf16 = getattr(model_spec, 'use_bf16', False)
-    device_map = getattr(model_spec, 'device_map', False)
-
-    if not device_map:
-        model = model_type.from_pretrained(
-            hf_model_str,
-            torch_dtype=torch.bfloat16 if use_bf16 else "auto",
-            trust_remote_code=trust_remote_code
-        )
-    else:
-        model = model_type.from_pretrained(
-            hf_model_str,
-            torch_dtype=torch.bfloat16 if use_bf16 else "auto",
-            trust_remote_code=trust_remote_code,
-            device_map="auto"
-        )
+    print("MODEL **KWARGS")
+    print(trust_remote_code, use_bf16)
+    model = model_type.from_pretrained(
+        hf_model_str,
+        torch_dtype=torch.bfloat16 if use_bf16 else "auto",
+        trust_remote_code=trust_remote_code,
+        device_map="auto"
+    )
 
     # Set pad_token_id to eos_token_id if it's not already set
     generation_config = model.generation_config
