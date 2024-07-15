@@ -162,8 +162,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.model_type = model_spec['model_type']
         self.model_name = model_spec['model_name']
         self.processor = load_processor(model_spec)
-        # self.multimodal_model = load_model(model_spec)
-        self.multimodal_model = AutoModel.from_pretrained('internlm/internlm-xcomposer2d5-7b', device_map=None, torch_dtype=torch.bfloat16, trust_remote_code=True).cuda().eval()
+        self.multimodal_model = load_model(model_spec)
+        # self.multimodal_model = AutoModel.from_pretrained('internlm/internlm-xcomposer2d5-7b', device_map=None, torch_dtype=torch.bfloat16, trust_remote_code=True).cuda().eval()
         self.multimodal_model.tokenizer = self.processor  # Hardcode for internLM
         self.split_prefix = model_spec['output_split_prefix']
         self.context_size = get_context_limit(model_spec)
@@ -175,8 +175,11 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.cull = model_spec_dict.get('eos_to_cull', None)
         self.supports_multiple_images = model_spec_dict.get('supports_multiple_images', False)
 
-        # self.idefics = 'idefics' in model_spec['model_name']
-        # self.intern = 'intern' in model_spec['model_name']
+        self.idefics = 'idefics' in model_spec['model_name']
+        self.intern = 'intern' in model_spec['model_name']
+
+        if self.intern:
+            self.multimodal_model = self.multimodal_model.cuda().eval()
 
     def generate_response(self, messages: List[Dict]) -> Tuple[Any, Any, str]:
         """
