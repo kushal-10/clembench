@@ -69,7 +69,7 @@ def check_context_limit(context_size: int, prompt_tokens: list, max_new_tokens: 
 # MODEL UTILS
 def load_processor(model_spec: backends.ModelSpec):
     """
-    Load processor from AutoProcessor for a specific model (Example - LlavaProcessor).
+    Load processor/tokenizer from AutoProcessor/AutoTokenizer for a specific model (Example - LlavaProcessor).
 
     :param model_spec: A dictionary that defines the model to be used, loaded from Model Registry.
     :return processor: Processor for the specific model.
@@ -79,12 +79,13 @@ def load_processor(model_spec: backends.ModelSpec):
     use_fast = not getattr(model_spec, 'not_fast', False)
     use_tokenizer = getattr(model_spec, 'tokenizer', False)
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
+    not_distributed = getattr(model_spec, 'not_distributed', False)
     processor_class = AutoTokenizer if use_tokenizer else AutoProcessor
 
     processor = processor_class.from_pretrained(
         hf_model_str,
         use_fast=use_fast,
-        device_map="auto",
+        device_map=None if not_distributed else "auto",
         verbose=False,
         trust_remote_code=trust_remote_code
     )
@@ -108,13 +109,13 @@ def load_model(model_spec: backends.ModelSpec):
 
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
     use_bf16 = getattr(model_spec, 'use_bf16', False)
-    print("MODEL **KWARGS")
-    print(trust_remote_code, use_bf16)
+    not_distributed = getattr(model_spec, 'not_distributed', False)
+
     model = model_type.from_pretrained(
         hf_model_str,
         torch_dtype=torch.bfloat16 if use_bf16 else "auto",
         trust_remote_code=trust_remote_code,
-        device_map="auto"
+        device_map=None if not_distributed else "auto"
     )
 
     # Set pad_token_id to eos_token_id if it's not already set
