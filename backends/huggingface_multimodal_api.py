@@ -198,6 +198,10 @@ class HuggingfaceMultimodalModel(backends.Model):
             return "", {"response": ""}, ""
 
         model_response = RESPONSE_MAP[self.model_type]
+        print(model_response)
+        model_response = model_response()
+        print(model_response)
+
 
         kwargs = {"template": self.template}
         prompt_text, image, additions = model_response.prepare_inputs(messages=messages, **kwargs)
