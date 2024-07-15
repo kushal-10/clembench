@@ -49,9 +49,15 @@ def generate_intern_response(prompt: str, history: list, image: list, model: Aut
     # By default unset Gradient Calculation for inferencing
     torch.set_grad_enabled(False)
 
+    model = model.cuda().eval()
+    model.tokenizer = tokenizer
+
     # Use CUDA to get the response
     with torch.autocast(device_type='cuda', dtype=torch.float16):
-        response, his = model.chat(tokenizer, prompt, image, do_sample=False, num_beams=3,
+        response, his = model.chat(tokenizer, prompt, image,
+                                   do_sample=False,
+                                   num_beams=3,
+                                   top_p=1,
                                    use_meta=True)
 
         # Unset top_p manually to avoid the following warning
