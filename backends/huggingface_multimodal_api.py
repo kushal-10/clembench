@@ -90,7 +90,8 @@ def load_processor(model_spec: backends.ModelSpec):
     )
 
     logger.info(f'Loading {processor_class} for model : {model_spec.model_name}')
-    return processor
+    # return processor
+    return AutoTokenizer.from_pretrained('internlm/internlm-xcomposer2d5-7b', trust_remote_code=True)
 
 
 # MODEL UTILS
