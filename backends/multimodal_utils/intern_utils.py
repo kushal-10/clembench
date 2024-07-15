@@ -71,7 +71,7 @@ class InternVLM():
         for h in history:
             collect_history += h[0] + h[1]
         prompt_text = prompt + collect_history
-        prompt_tokens = self.processor.tokenize(prompt_text)
+        prompt_tokens = processor.tokenize(prompt_text)
 
         return prompt_tokens
 
