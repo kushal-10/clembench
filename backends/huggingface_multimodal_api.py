@@ -84,7 +84,7 @@ def load_processor(model_spec: backends.ModelSpec):
 
     processor = processor_class.from_pretrained(
         hf_model_str,
-        use_fast=use_fast,
+        # use_fast=use_fast,
         device_map=None if not_distributed else "auto",
         verbose=False,
         trust_remote_code=trust_remote_code
