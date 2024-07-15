@@ -200,8 +200,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         model_response = RESPONSE_MAP[self.model_type]
 
         kwargs = {"template": self.template}
-        prompt_text, image, additions = model_response.prepare_inputs(messages, **kwargs)
-        prompt_tokens = model_response.get_tokens(prompt_text, self.processor, **additions)
+        prompt_text, image, additions = model_response.prepare_inputs(messages=messages, **kwargs)
+        prompt_tokens = model_response.get_tokens(prompt=prompt_text, processor=self.processor, **additions)
 
         # Check context limit
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
@@ -215,6 +215,6 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
 
-        response, response_text = model_response.generate_output(prompt_text, image, self.multimodal_model, self.processor, **additions)
+        response, response_text = model_response.generate_output(prompt=prompt_text, image=image, model=self.multimodal_model, processor=self.processor, **additions)
         print(f"TESTING RESPONSE ##################### \n {response} \n #############################")
         return prompt, response, response_text
