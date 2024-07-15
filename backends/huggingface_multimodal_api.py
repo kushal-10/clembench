@@ -67,7 +67,7 @@ def check_context_limit(context_size: int, prompt_tokens: list, max_new_tokens: 
 
 
 # MODEL UTILS
-def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
+def load_processor(model_spec: backends.ModelSpec):
     """
     Load processor from AutoProcessor for a specific model (Example - LlavaProcessor).
 
@@ -79,7 +79,7 @@ def load_processor(model_spec: backends.ModelSpec) -> AutoProcessor:
     use_fast = not getattr(model_spec, 'not_fast', False)
     use_tokenizer = getattr(model_spec, 'tokenizer', False)
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
-    processor_class = AutoProcessor if use_tokenizer else AutoTokenizer
+    processor_class = AutoTokenizer if use_tokenizer else AutoProcessor
 
     processor = processor_class.from_pretrained(
         hf_model_str,
@@ -222,7 +222,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         if 'intern' in self.model_name:
             print(f"Prompt: {prompt} \n History: {history} \n Images: {images} ")
             # print(f"Model : {self.multimodal_model}, Tokenizer : {self.processor}")
-            response, response_text = generate_intern_response(prompt, history, images, self.multimodal_model, self.processor)
+            response, response_text = generate_intern_response(prompt=prompt, history=history, image=images,
+                                                               model=self.multimodal_model, tokenizer=self.processor)
         else:
             response, response_text = get_llava_response(prompt_text, images, self.processor, self.multimodal_model,
                                                          self.get_max_tokens(), self.device, self.split_prefix, self.cull)

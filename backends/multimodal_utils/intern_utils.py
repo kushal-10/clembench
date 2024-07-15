@@ -1,6 +1,7 @@
 # Individual inference methods for InternLM X-Composer 2.5 7B
 from typing import Dict
 import torch
+from transformers import AutoModel, AutoTokenizer
 
 
 def get_intern_inputs(messages: list[Dict]):
@@ -45,7 +46,7 @@ def get_intern_inputs(messages: list[Dict]):
     return prompt, history, image
 
 
-def generate_intern_response(prompt, history, image, model, tokenizer):
+def generate_intern_response(prompt: str, history: list, image: list, model: AutoModel, tokenizer: AutoTokenizer):
 
     # By default unset Gradient Calculation for inferencing
     torch.set_grad_enabled(False)
