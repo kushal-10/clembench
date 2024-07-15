@@ -51,7 +51,7 @@ def generate_intern_response(prompt: str, history: list, image: list, model: Aut
 
     # Use CUDA to get the response
     with torch.autocast(device_type='cuda', dtype=torch.float16):
-        response, his = model.chat(tokenizer, prompt, image, do_sample=False, top_p=1, num_beams=3, history=history,
+        response, his = model.chat(tokenizer, prompt, image, do_sample=False, top_p=1, num_beams=3,
                                    use_meta=True)
 
         # Unset top_p manually to avoid the following warning
