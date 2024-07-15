@@ -3,83 +3,150 @@ Additional Utility functions for LLaVA type models
 """
 from typing import Dict
 from PIL import Image
+import warnings
 import requests
 from jinja2 import Template
+from transformers import AutoProcessor, AutoModelForVision2Seq
 
 
-def load_image(image: str):
-    """
-    Load an image based on a given local path or URL
+class LlavaVLM():
+    def __init__(self):
+        pass
 
-    :param image: Image path/url
-    :return loaded_image: PIL Image
-    """
+    def load_image(self, image: str):
+        """
+        Load an image based on a given local path or URL
 
-    if image.startswith('http') or image.startswith('https'):
-        image = Image.open(requests.get(image, stream=True).raw).convert('RGB')
-    else:
-        image = Image.open(image).convert('RGB')
+        :param image: Image path/url
+        :return loaded_image: PIL Image
+        """
 
-    return image
+        if image.startswith('http') or image.startswith('https'):
+            image = Image.open(requests.get(image, stream=True).raw).convert('RGB')
+        else:
+            image = Image.open(image).convert('RGB')
 
-
-def get_images(messages: list[Dict]) -> list:
-    """
-    Return loaded images from messages.
-
-    :param messages: A list of messages passed to the model.
-    :return images: A list of PIL Image objects.
-    """
-    # Collect image links/file locations mentioned in messages
-    images = [
-        img
-        for message in messages
-        if 'image' in message
-        for img in (message['image'] if isinstance(message['image'], list) else [message['image']])
-    ]
-
-    # Return None if no image is passed
-    if not images:
-        return []
-
-    # Load Images
-    loaded_images = [load_image(img) for img in images]
-
-    return loaded_images
+        return image
 
 
-def generate_llava_inputs(messages, template):
-    # Collect Loaded Images for the processor
-    images = get_images(messages)
+    def get_images(self, messages: list[Dict]) -> list:
+        """
+        Return loaded images from messages.
 
-    # Generate Input prompt string for the model
-    template_str = template
-    template = Template(template_str)
-    prompt_text = template.render(messages=messages)
+        :param messages: A list of messages passed to the model.
+        :return images: A list of PIL Image objects.
+        """
+        # Collect image links/file locations mentioned in messages
+        images = [
+            img
+            for message in messages
+            if 'image' in message
+            for img in (message['image'] if isinstance(message['image'], list) else [message['image']])
+        ]
 
-    return prompt_text, images
+        # Return None if no image is passed
+        if not images:
+            return []
+
+        # Load Images
+        loaded_images = [self.load_image(img) for img in images]
+
+        return loaded_images
 
 
-def get_llava_response(prompt_text, images, processor, model, max_tokens, device, split_prefix, cull):
-    """
-    Prompt Llava type models to generate the response
-    """
+    def prepare_inputs(self, messages, **kwargs):
+        """
+        Returns a separate history, the prompt and a list of images to be passed to the model
 
-    # If Image is not passed, use the Language part of the model via tokenizer, skip the image processing part
-    if not images:  # If no images are present in the history + current utterance, use tokenizer to get inputs
-        inputs = processor.tokenizer(prompt_text, return_tensors="pt").to(device)
-    else:
-        inputs = processor(prompt_text, images=images, return_tensors="pt").to(device)
+        :param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
+        :return history, prompt, image: Inputs to the model
+        """
 
-    model_output = model.generate(**inputs, max_new_tokens=max_tokens)
-    generated_text = processor.batch_decode(model_output, skip_special_tokens=True)
+        if hasattr(kwargs, 'template'):
+            template = kwargs['template']
+        else:
+            warnings.warn("Warning: 'template' is not passed in kwargs for model type LLaVA. Returning empty prompt and images list", UserWarning)
+            return "", []
 
-    response = {"response": generated_text}
+        # Collect Loaded Images for the processor
+        images = self.get_images(messages)
 
-    response_text = generated_text[0].split(split_prefix)[-1]  # Get the last assistant response
-    if cull:
-        rt_split = response_text.split(cull)  # Cull from End of String token
-        response_text = rt_split[0]
-    response_text = response_text.strip()
+        # Generate Input prompt string for the model
+        template_str = template
+        template = Template(template_str)
+        prompt_text = template.render(messages=messages)
 
-    return response, response_text
+        return {
+            "prompt": prompt_text,
+            "image": images,
+            "kwargs": {'max_tokens': kwargs['max_tokens'], 'device': kwargs['device'],
+                       'split_prefix': kwargs['split_prefix'], 'cull': kwargs['cull']}
+                }
+
+
+    def get_tokens(self, prompt: str, processor: AutoProcessor, **kwargs):
+        """
+        Get the tokens passed to the model for context check
+
+        :param prompt: The current prompt passed to the model
+        :param processor: The processor used for the model
+        :param kwargs: The kwargs passed to the model [history,...]
+
+        :return: The tokens passed to the model
+        """
+
+        return processor.tokenizer.tokenize(prompt)
+
+    def generate_output(prompt: str, image: list, model: AutoModelForVision2Seq, processor: AutoProcessor, **kwargs):
+        """
+        Generate Outputs [response, response_text] for InternLM type Models
+        Ref - https://huggingface.co/llava-hf/llava-v1.6-34b-hf
+
+        :param prompt: The text prompt to be used for generating the response.
+        :param images: A list of images to be included in the model's input.
+        :param model: The model used for generating the output. This should be compatible with InternLM type models.
+        :param processor: The processor used to preprocess the prompt.
+        :param **kwargs: Additional keyword arguments that may be required by the model or tokenizer.
+
+        :return response: The raw output from the model.
+        :return response_text: The decoded text response generated by the model.
+        """
+        if hasattr(kwargs, 'max_tokens'):
+            max_tokens = kwargs['max_tokens']
+        else:
+            warnings.warn("Warning: max_tokens not passed for generating outputs for model - LLaVA", UserWarning)
+
+        if hasattr(kwargs, 'device'):
+            device = kwargs['device']
+        else:
+            warnings.warn("Warning: device not passed for generating outputs for model - LLaVA", UserWarning)
+
+        if hasattr(kwargs, 'split_prefix'):
+            split_prefix = kwargs['split_prefix']
+        else:
+            warnings.warn("Warning: split_prefix not passed for generating outputs for model - LLaVA", UserWarning)
+
+        if hasattr(kwargs, 'cull'):
+            cull = kwargs['cull']
+        else:
+            warnings.warn("Warning: cull not passed for generating outputs for model - LLaVA", UserWarning)
+
+
+        # If Image is not passed, use the Language part of the model via tokenizer, skip the image processing part
+        if not image:  # If no images are present in the history + current utterance, use tokenizer to get inputs
+            inputs = processor.tokenizer(prompt, return_tensors="pt").to(device)
+        else:
+            inputs = processor(prompt, images=image, return_tensors="pt").to(device)
+
+        model_output = model.generate(**inputs, max_new_tokens=max_tokens)
+        generated_text = processor.batch_decode(model_output, skip_special_tokens=True)
+
+        response = {"response": generated_text}
+
+        response_text = generated_text[0].split(split_prefix)[-1]  # Get the last assistant response
+        if cull:
+            rt_split = response_text.split(cull)  # Cull from End of String token
+            response_text = rt_split[0]
+        response_text = response_text.strip()
+
+        return response, response_text

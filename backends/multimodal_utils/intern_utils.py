@@ -1,68 +1,120 @@
 # Individual inference methods for InternLM X-Composer 2.5 7B
 from typing import Dict
+import warnings
 import torch
 from transformers import AutoModel, AutoTokenizer
 
 
-def get_intern_inputs(messages: list[Dict]):
-    """
-    Returns a separate history, the prompt and a list of images to be passed to the model
+class InternVLM():
+    def __init__(self):
+        pass
 
-    :param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
-    :return history, prompt, image: Inputs to the model
-    """
-    history = []
-    image = []
-    image_counter = 0
-    prev_user_msg = ""
+    def prepare_inputs(self, messages: list[Dict], **kwargs):
+        """
+        Returns a separate history, the prompt and a list of images to be passed to the model
 
-    for m in messages:
-        if m['role'] == 'user':
-            prev_user_msg = m['content']
-            if 'image' in m:
-                if isinstance(m['image'], str):
-                    # A single image is passed
-                    print("Image is a string")
-                    image_counter += 1
-                    prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
-                    image.append(m['image'])
-                elif isinstance(m['image'], list):
-                    # A list of images is passed
-                    for img in m['image']:
+        :param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
+        :return history, prompt, image: Inputs to the model
+        """
+        history = []
+        image = []
+        image_counter = 0
+        prev_user_msg = ""
+
+        for m in messages:
+            if m['role'] == 'user':
+                prev_user_msg = m['content']
+                if 'image' in m:
+                    if isinstance(m['image'], str):
+                        # A single image is passed
+                        print("Image is a string")
                         image_counter += 1
                         prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
-                        image.append(img)
-                else:
-                    print("Please pass a valid value of image in the message - Either a str or List[str]")
+                        image.append(m['image'])
+                    elif isinstance(m['image'], list):
+                        # A list of images is passed
+                        for img in m['image']:
+                            image_counter += 1
+                            prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
+                            image.append(img)
+                    else:
+                        print("Please pass a valid value of image in the message - Either a str or List[str]")
 
-        elif m['role'] == 'assistant':
-            # Append User+Assistant Message in Sequence
-            history.append((prev_user_msg, m['content']))
+            elif m['role'] == 'assistant':
+                # Append User+Assistant Message in Sequence
+                history.append((prev_user_msg, m['content']))
 
-    prompt = prev_user_msg
+        return {
+            "prompt": prev_user_msg,
+            "image": image,
+            "kwargs": {"history": history}
+        }
 
-    return prompt, history, image
+    def get_tokens(self, prompt: str, processor: AutoTokenizer, **kwargs):
+        """
+        Get the tokens passed to the model for context check
+
+        :param prompt: The current prompt passed to the model
+        :param processor: The processor used for the model
+        :param kwargs: The kwargs passed to the model [history,...]
+
+        :return: The tokens passed to the model
+        """
+        if "history" in kwargs:
+            history = kwargs["history"]
+        else:
+            warnings.warn("History is None. Returning empty message")
+            return ""
+
+        collect_history = ""
+        for h in history:
+            collect_history += h[0] + h[1]
+        prompt_text = prompt + collect_history
+        prompt_tokens = self.processor.tokenize(prompt_text)
+
+        return prompt_tokens
 
 
-def generate_intern_response(prompt: str, history: list, image: list, model: AutoModel, tokenizer: AutoTokenizer):
+    def generate_output(prompt: str, image: list, model: AutoModel, processor: AutoTokenizer, **kwargs):
+        """
+        Generate Outputs [response, response_text] for InternLM type Models
+        Ref - https://huggingface.co/internlm/internlm-xcomposer2d5-7b
 
-    # By default unset Gradient Calculation for inferencing
-    torch.set_grad_enabled(False)
+        :param prompt: The text prompt to be used for generating the response.
+        :param images: A list of images to be included in the model's input.
+        :param model: The model used for generating the output. This should be compatible with InternLM type models.
+        :param processor: The processor/tokenizer used to preprocess the prompt.
+        :param **kwargs: Additional keyword arguments that may be required by the model or tokenizer.
 
-    model = model.cuda().eval()
-    model.tokenizer = tokenizer
+        :return response: The raw output from the model.
+        :return response_text: The decoded text response generated by the model.
+        """
 
-    # Use CUDA to get the response
-    with torch.autocast(device_type='cuda', dtype=torch.float16):
-        response, his = model.chat(tokenizer, prompt, image,
-                                   do_sample=False,
-                                   num_beams=3,
-                                   top_p=1,
-                                   use_meta=True)
+        # TODO - Raise Warning When Using CPU and not CUDA
 
-        # Unset top_p manually to avoid the following warning
-        # UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+        if hasattr(kwargs, "history"):
+            history = kwargs["history"]
+        else:
+            warnings.warn("Warning: 'history' is not passed in kwargs. Returning empty response", UserWarning)
+            return "", ""
 
-        response_text = response.strip()
+        # By default unset Gradient Calculation for inferencing
+        torch.set_grad_enabled(False)
 
-    return response, response_text
+        model = model.cuda().eval()
+        model.tokenizer = processor
+
+        # Use CUDA to get the response
+        with torch.autocast(device_type='cuda', dtype=torch.float16):
+            response, his = model.chat(processor, prompt, image,
+                                       do_sample=False,
+                                       num_beams=3,
+                                       top_p=1,
+                                       use_meta=True)
+
+            # Unset top_p manually to avoid the following warning
+            # UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+
+            response_text = response.strip()
+
+        return response, response_text

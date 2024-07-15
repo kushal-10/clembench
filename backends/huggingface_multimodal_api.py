@@ -8,14 +8,19 @@ from transformers import (AutoProcessor, AutoModelForVision2Seq, IdeficsForVisio
                           AutoConfig, AutoModel, AutoTokenizer)
 
 import backends
-from backends.multimodal_utils.llava_utils import generate_llava_inputs, get_llava_response
-from backends.multimodal_utils.intern_utils import get_intern_inputs, generate_intern_response
+from backends.multimodal_utils.llava_utils import LlavaVLM
+from backends.multimodal_utils.intern_utils import InternVLM
 
 # CONSTANTS
 MODEL_LOADER_MAP = {
     "Idefics": IdeficsForVisionText2Text,
     "Vision2Seq": AutoModelForVision2Seq,
     "Intern": AutoModel
+}
+
+RESPONSE_MAP = {
+    "Vision2Seq": LlavaVLM,
+    "Intern": InternVLM
 }
 
 FALLBACK_CONTEXT_SIZE = 256
@@ -173,13 +178,6 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.cull = model_spec_dict.get('eos_to_cull', None)
         self.supports_multiple_images = model_spec_dict.get('supports_multiple_images', False)
 
-        # self.idefics = 'idefics' in model_spec['model_name']
-        # self.intern = 'intern' in model_spec['model_name']
-        #
-        # if self.intern:
-        #     self.multimodal_model = self.multimodal_model.cuda().eval()
-        #     self.multimodal_model.tokenizer = self.processor
-
     def generate_response(self, messages: List[Dict]) -> Tuple[Any, Any, str]:
         """
         :param messages: for example
@@ -199,6 +197,14 @@ class HuggingfaceMultimodalModel(backends.Model):
             print(f"Multiple images not supported in a single turn for model {self.model_name}")
             return "", {"response": ""}, ""
 
+        model_response = RESPONSE_MAP[self.model_type]
+
+        kwargs = {"template": self.template}
+        prompt_text, image, additions = model_response.prepeare_inputs(messages, **kwargs)
+        prompt_tokens = model_response.get_tokens(prompt_text, self.processor, **additions)
+
+
+        """
         # Get input prompt by applying jinja template, if template is provided
         # prompt_text = ## Get Input String for counting tokens?
         if 'intern' in self.model_name:
@@ -210,7 +216,8 @@ class HuggingfaceMultimodalModel(backends.Model):
             prompt_tokens = self.processor.tokenize(prompt_text)
         else:
             prompt_text, images = generate_llava_inputs(messages, self.template)
-            prompt_tokens = self.processor.tokenizer.tokenize(prompt_text)
+            prompt_tokens = 
+        """
 
         # Check context limit
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
@@ -224,6 +231,8 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
 
+
+        """
         # Based on this input_prompt, return response, response_text for each model
         # Store generated text
         if 'intern' in self.model_name:
@@ -235,4 +244,8 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         print(f"################################################ TESTING RESPONSE #############################################################")
         print(f"INPUT: {prompt} \n RESPONSE: {response}\n RESPONSE TEXT: {response_text}")
+        """
+
+        response, response_text = model_response.generate_output(prompt_text, image, self.multimodal_model, self.processor, **additions)
+
         return prompt, response, response_text
