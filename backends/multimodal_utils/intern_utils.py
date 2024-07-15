@@ -27,13 +27,11 @@ def get_intern_inputs(messages: list[Dict]):
                     prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
                     image.append(m['image'])
                 elif isinstance(m['image'], list):
-                    print("Image is a list")
                     # A list of images is passed
                     for img in m['image']:
                         image_counter += 1
                         prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
                         image.append(img)
-                        print(f"Printing image {img}")
                 else:
                     print("Please pass a valid value of image in the message - Either a str or List[str]")
 

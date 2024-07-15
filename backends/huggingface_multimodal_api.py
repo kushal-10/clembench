@@ -90,8 +90,7 @@ def load_processor(model_spec: backends.ModelSpec):
     )
 
     logger.info(f'Loading {processor_class} for model : {model_spec.model_name}')
-    # return processor
-    return AutoTokenizer.from_pretrained('internlm/internlm-xcomposer2d5-7b', trust_remote_code=True)
+    return processor
 
 
 # MODEL UTILS
@@ -161,7 +160,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.model_name = model_spec['model_name']
         self.processor = load_processor(model_spec)
         self.multimodal_model = load_model(model_spec)
-        self.multimodal_model.tokenizer = self.processor # Hardcode for internLM
+        self.multimodal_model.tokenizer = self.processor  # Hardcode for internLM
         self.split_prefix = model_spec['output_split_prefix']
         self.context_size = get_context_limit(model_spec)
 
@@ -222,8 +221,6 @@ class HuggingfaceMultimodalModel(backends.Model):
         # Based on this input_prompt, return response, response_text for each model
         # Store generated text
         if 'intern' in self.model_name:
-            print(f"Prompt: {prompt} \n History: {history} \n Images: {images} ")
-            # print(f"Model : {self.multimodal_model}, Tokenizer : {self.processor}")
             response, response_text = generate_intern_response(prompt=prompt, history=history, image=images,
                                                                model=self.multimodal_model, tokenizer=self.processor)
         else:
