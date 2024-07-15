@@ -108,6 +108,8 @@ def load_model(model_spec: backends.ModelSpec):
 
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
     use_bf16 = getattr(model_spec, 'use_bf16', False)
+    print("Model Values")
+    print(trust_remote_code, use_bf16)
     model = model_type.from_pretrained(
         hf_model_str,
         torch_dtype=torch.bfloat16 if use_bf16 else "auto",
@@ -159,7 +161,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.model_type = model_spec['model_type']
         self.model_name = model_spec['model_name']
         self.processor = load_processor(model_spec)
-        self.multimodal_model = load_model(model_spec)
+        # self.multimodal_model = load_model(model_spec)
+        self.multimodal_model = AutoModel.from_pretrained('internlm/internlm-xcomposer2d5-7b', torch_dtype=torch.bfloat16, trust_remote_code=True).cuda().eval()
         self.multimodal_model.tokenizer = self.processor  # Hardcode for internLM
         self.split_prefix = model_spec['output_split_prefix']
         self.context_size = get_context_limit(model_spec)
