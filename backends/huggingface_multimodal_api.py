@@ -205,6 +205,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         outs = model_response.prepare_inputs(messages=messages, **kwargs)
         prompt_text, image, additions = outs['prompt'], outs['image'], outs['kwargs']
 
+        print(additions['history'])
+
         prompt_tokens = model_response.get_tokens(prompt=prompt_text, processor=self.processor, **additions)
 
         # Check context limit

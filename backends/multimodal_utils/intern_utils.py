@@ -7,7 +7,6 @@ from transformers import AutoModel, AutoTokenizer
 
 class InternVLM():
     def __init__(self):
-        print("Initializing InternVLMs")
         pass
 
     def prepare_inputs(self, messages: list[Dict], **kwargs):
