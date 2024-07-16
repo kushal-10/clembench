@@ -62,6 +62,7 @@ class LlavaVLM():
         :return history, prompt, image: Inputs to the model
         """
         print(f"Passed Kwargs: {kwargs}")
+        print(f"Check truth {'template' in kwargs}, {kwargs['template']}")
         if hasattr(kwargs, 'template'):
             template = kwargs['template']
         else:
