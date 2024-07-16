@@ -60,11 +60,8 @@ class InternVLM():
 
         :return: The tokens passed to the model
         """
-        if "history" in kwargs:
-            history = kwargs["history"]
-        else:
-            warnings.warn("History is None. Returning empty message")
-            return ""
+
+        history = kwargs["history"]
 
         collect_history = ""
         for h in history:
@@ -91,10 +88,9 @@ class InternVLM():
         """
 
         # TODO - Raise Warning When Using CPU and not CUDA
+        # TODO - Add model.chat args in model registry, pass them as additional kwargs
 
-        history = []
-        if hasattr(kwargs, "history"):
-            history = kwargs["history"]
+        history = kwargs["history"]
 
         # By default unset Gradient Calculation for inferencing
         torch.set_grad_enabled(False)
