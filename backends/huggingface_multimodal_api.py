@@ -203,6 +203,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         kwargs = {"template": self.template}
         outs = model_response.prepare_inputs(messages=messages, **kwargs)
         prompt_text, image, additions = outs['prompt'], outs['image'], outs['kwargs']
+        print(f"Print additions : {additions}")
 
         prompt_tokens = model_response.get_tokens(prompt=prompt_text, processor=self.processor, **additions)
 
