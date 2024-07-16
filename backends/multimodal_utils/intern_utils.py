@@ -118,4 +118,7 @@ class InternVLM():
 
             response_text = response.strip()
 
+            # Cast into Clemgame compatible form
+            response = {"response": response}
+
         return response, response_text
