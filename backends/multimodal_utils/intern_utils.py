@@ -28,7 +28,6 @@ class InternVLM():
                 if 'image' in m:
                     if isinstance(m['image'], str):
                         # A single image is passed
-                        print("Image is a string")
                         image_counter += 1
                         prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
                         image.append(m['image'])
@@ -39,7 +38,7 @@ class InternVLM():
                             prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
                             image.append(img)
                     else:
-                        print("Please pass a valid value of image in the message - Either a str or List[str]")
+                        print("Please pass a valid type of image in the message - Either a str or List[str]")
 
             elif m['role'] == 'assistant':
                 # Append User+Assistant Message in Sequence
@@ -96,8 +95,6 @@ class InternVLM():
         history = []
         if hasattr(kwargs, "history"):
             history = kwargs["history"]
-        else:
-            warnings.warn("Warning: 'history' is not passed in kwargs. Ignore this message for the First Turn", UserWarning)
 
         # By default unset Gradient Calculation for inferencing
         torch.set_grad_enabled(False)
@@ -121,7 +118,5 @@ class InternVLM():
 
             # Cast into Clemgame compatible form
             response = {"response": gen_text}
-            print("Chek inside func")
-            print(type(response_text), print(type(response)))
 
         return response, response_text

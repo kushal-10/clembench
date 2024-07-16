@@ -203,7 +203,6 @@ class HuggingfaceMultimodalModel(backends.Model):
         kwargs = {"template": self.template}
         outs = model_response.prepare_inputs(messages=messages, **kwargs)
         prompt_text, image, additions = outs['prompt'], outs['image'], outs['kwargs']
-        print(f"Print additions : {additions}")
 
         prompt_tokens = model_response.get_tokens(prompt=prompt_text, processor=self.processor, **additions)
 
@@ -221,7 +220,6 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         response, response_text = model_response.generate_output(prompt=prompt_text, image=image, model=self.multimodal_model, processor=self.processor, **additions)
 
-        print(type(response), type(response_text))
-        print(f"TESTING RESPONSE ##################### \n {response} \n #############################")
+        print(f"TESTING RESPONSE \n ##################### \n {response} \n #############################")
 
         return prompt, response, response_text
