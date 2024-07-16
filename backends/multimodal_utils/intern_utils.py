@@ -76,7 +76,7 @@ class InternVLM():
         return prompt_tokens
 
 
-    def generate_output(prompt: str, image: list, model: AutoModel, processor: AutoTokenizer, **kwargs):
+    def generate_output(self, prompt: str, image: list, model: AutoModel, processor: AutoTokenizer, **kwargs):
         """
         Generate Outputs [response, response_text] for InternLM type Models
         Ref - https://huggingface.co/internlm/internlm-xcomposer2d5-7b

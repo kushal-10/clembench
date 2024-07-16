@@ -83,7 +83,6 @@ class LlavaVLM():
                        'split_prefix': kwargs['split_prefix'], 'cull': kwargs['cull']}
                 }
 
-
     def get_tokens(self, prompt: str, processor: AutoProcessor, **kwargs):
         """
         Get the tokens passed to the model for context check
@@ -97,7 +96,7 @@ class LlavaVLM():
 
         return processor.tokenizer.tokenize(prompt)
 
-    def generate_output(prompt: str, image: list, model: AutoModelForVision2Seq, processor: AutoProcessor, **kwargs):
+    def generate_output(self, prompt: str, image: list, model: AutoModelForVision2Seq, processor: AutoProcessor, **kwargs):
         """
         Generate Outputs [response, response_text] for InternLM type Models
         Ref - https://huggingface.co/llava-hf/llava-v1.6-34b-hf
@@ -130,7 +129,6 @@ class LlavaVLM():
             cull = kwargs['cull']
         else:
             warnings.warn("Warning: cull not passed for generating outputs for model - LLaVA", UserWarning)
-
 
         # If Image is not passed, use the Language part of the model via tokenizer, skip the image processing part
         if not image:  # If no images are present in the history + current utterance, use tokenizer to get inputs
