@@ -66,7 +66,7 @@ class LlavaVLM():
             template = kwargs['template']
         else:
             warnings.warn("Warning: 'template' is not passed in kwargs for model type LLaVA. Returning empty outputs", UserWarning)
-            return "", [], {}
+            return {"prompt": "", "image": [], "kwargs": {}}
 
         # Collect Loaded Images for the processor
         images = self.get_images(messages)
