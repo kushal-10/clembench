@@ -65,8 +65,8 @@ class LlavaVLM():
         if hasattr(kwargs, 'template'):
             template = kwargs['template']
         else:
-            warnings.warn("Warning: 'template' is not passed in kwargs for model type LLaVA. Returning empty prompt and images list", UserWarning)
-            return "", []
+            warnings.warn("Warning: 'template' is not passed in kwargs for model type LLaVA. Returning empty outputs", UserWarning)
+            return "", [], {}
 
         # Collect Loaded Images for the processor
         images = self.get_images(messages)
