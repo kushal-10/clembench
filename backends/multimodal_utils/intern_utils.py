@@ -120,5 +120,7 @@ class InternVLM():
 
             # Cast into Clemgame compatible form
             response = {"response": gen_text}
+            print("Chek inside func")
+            print(type(response_text), print(type(response)))
 
         return response, response_text
