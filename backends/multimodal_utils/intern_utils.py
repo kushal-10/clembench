@@ -75,14 +75,14 @@ class InternVLM():
 
         return prompt_tokens
 
-
-    def generate_output(self, prompt: str, image: list, model: AutoModel, processor: AutoTokenizer, **kwargs):
+    def generate_output(self, prompt: str, image: list, model: AutoModel,
+                        processor: AutoTokenizer, **kwargs) -> [Dict, str]:
         """
         Generate Outputs [response, response_text] for InternLM type Models
         Ref - https://huggingface.co/internlm/internlm-xcomposer2d5-7b
 
         :param prompt: The text prompt to be used for generating the response.
-        :param images: A list of images to be included in the model's input.
+        :param image: A list of images to be included in the model's input.
         :param model: The model used for generating the output. This should be compatible with InternLM type models.
         :param processor: The processor/tokenizer used to preprocess the prompt.
         :param **kwargs: Additional keyword arguments that may be required by the model or tokenizer.
@@ -107,7 +107,7 @@ class InternVLM():
 
         # Use CUDA to get the response
         with torch.autocast(device_type='cuda', dtype=torch.float16):
-            response, his = model.chat(processor, prompt, image,
+            gen_text, _ = model.chat(processor, prompt, image,
                                        do_sample=False,
                                        num_beams=3,
                                        top_p=1,
@@ -116,9 +116,9 @@ class InternVLM():
             # Unset top_p manually to avoid the following warning
             # UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
 
-            response_text = response.strip()
+            response_text = gen_text.strip()
 
             # Cast into Clemgame compatible form
-            response = {"response": response}
+            response = {"response": gen_text}
 
         return response, response_text

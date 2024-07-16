@@ -220,6 +220,7 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         response, response_text = model_response.generate_output(prompt=prompt_text, image=image, model=self.multimodal_model, processor=self.processor, **additions)
 
+        print(type(response), type(response_text))
         print(f"TESTING RESPONSE ##################### \n {response} \n #############################")
 
         return prompt, response, response_text
