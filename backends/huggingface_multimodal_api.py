@@ -198,10 +198,7 @@ class HuggingfaceMultimodalModel(backends.Model):
             return "", {"response": ""}, ""
 
         model_response = RESPONSE_MAP[self.model_type]
-        print(model_response)
         model_response = model_response()
-        print(model_response)
-
 
         kwargs = {"template": self.template}
         outs = model_response.prepare_inputs(messages=messages, **kwargs)
@@ -220,7 +217,7 @@ class HuggingfaceMultimodalModel(backends.Model):
                                                 context_size=context_check[3])
 
         prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
-
+        print(f"PROMPT TEXT \n {prompt_text} \n PROMPT TYPE \n {type(prompt_text)}\n\n")
         response, response_text = model_response.generate_output(prompt=prompt_text, image=image, model=self.multimodal_model, processor=self.processor, **additions)
         print(f"TESTING RESPONSE ##################### \n {response} \n #############################")
         return prompt, response, response_text
