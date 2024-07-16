@@ -61,7 +61,7 @@ class LlavaVLM():
         :param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
         :return history, prompt, image: Inputs to the model
         """
-
+        print(f"Passed Kwargs: {kwargs}")
         if hasattr(kwargs, 'template'):
             template = kwargs['template']
         else:
