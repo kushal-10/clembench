@@ -93,11 +93,11 @@ class InternVLM():
 
         # TODO - Raise Warning When Using CPU and not CUDA
 
+        history = []
         if hasattr(kwargs, "history"):
             history = kwargs["history"]
         else:
-            warnings.warn("Warning: 'history' is not passed in kwargs. Returning empty response", UserWarning)
-            return "", ""
+            warnings.warn("Warning: 'history' is not passed in kwargs. Ignore this message for the First Turn", UserWarning)
 
         # By default unset Gradient Calculation for inferencing
         torch.set_grad_enabled(False)
@@ -111,6 +111,7 @@ class InternVLM():
                                        do_sample=False,
                                        num_beams=3,
                                        top_p=1,
+                                       history=history,
                                        use_meta=True)
 
             # Unset top_p manually to avoid the following warning
