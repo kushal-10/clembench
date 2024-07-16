@@ -200,7 +200,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         model_response = RESPONSE_MAP[self.model_type]
         model_response = model_response()
 
-        kwargs = {"template": self.template}
+        kwargs = {"template": self.template, "max_tokens": self.get_max_tokens(), "device": self.device,
+                  "split_prefix": self.split_prefix, "cull": self.cull}
         outs = model_response.prepare_inputs(messages=messages, **kwargs)
         prompt_text, image, additions = outs['prompt'], outs['image'], outs['kwargs']
 
