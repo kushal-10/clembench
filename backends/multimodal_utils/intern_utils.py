@@ -142,15 +142,22 @@ class InternVLM():
         with torch.autocast(device_type='cuda', dtype=torch.float16):
             # Process each image and handle channel mismatch
             processed_images = []
+            # for image_path in image:
+            #     img = Image.open(image_path)
+            #     if img.mode == 'RGBA':
+            #         fill = (255, 255, 255, 255)
+            #     else:
+            #         fill = (255, 255, 255)
+            #
+            #     img = transforms.functional.pad(img, padding=[0,0,0,0], fill=fill)
+            #     processed_images.append(img)
             for image_path in image:
-                img = Image.open(image_path)
-                if img.mode == 'RGBA':
-                    fill = (255, 255, 255, 255)
-                else:
-                    fill = (255, 255, 255)
-
-                img = transforms.functional.pad(img, padding=[0,0,0,0], fill=fill)
-                processed_images.append(img)
+                img = Image.open(image_path).convert('RGB')  # Ensure image is in RGB mode
+                transform = transforms.Compose([
+                    transforms.ToTensor(),  # Convert image to torch.Tensor
+                ])
+                img_tensor = transform(img)
+                processed_images.append(img_tensor)
 
             gen_text, _ = model.chat(processor, prompt, processed_images,
                                      do_sample=False,
