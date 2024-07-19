@@ -153,6 +153,8 @@ class InternVLM():
             #     processed_images.append(img)
             for image_path in image:
                 img = Image.open(image_path).convert('RGB')  # Ensure image is in RGB mode
+                if img.size[0] < 560 or img.size[1] < 560:
+                    img = img.resize((max(560, img.size[0]), max(560, img.size[1])), Image.ANTIALIAS)
                 transform = transforms.Compose([
                     transforms.ToTensor(),  # Convert image to torch.Tensor
                 ])
