@@ -73,21 +73,38 @@ class InternVLM():
 
         return prompt_tokens
 
-    def download_image(self, image_url: str, save_path: str) -> str:
+    def download_images(self, images: list) -> list:
         """
-        Download an image from a URL and save it locally.
+        Download images from URLs and save them locally.
 
-        :param image_url: URL of the image to be downloaded.
-        :param save_path: Local path where the image will be saved.
-        :return: Path to the saved image.
+        :param images: List of image URLs or local paths.
+        :return: List of local paths to the downloaded images.
         """
-        response = requests.get(image_url)
-        if response.status_code == 200:
-            image = Image.open(BytesIO(response.content))
-            image.save(save_path)
-            return save_path
-        else:
-            raise ValueError("Failed to download image")
+        local_paths = []
+        for idx, image in enumerate(images):
+            if image.startswith('http://') or image.startswith('https://'):
+                local_path = f'temp_image_{idx}.jpg'
+                response = requests.get(image)
+                if response.status_code == 200:
+                    image = Image.open(BytesIO(response.content))
+                    image.save(local_path)
+                    local_paths.append(local_path)
+                else:
+                    raise ValueError("Failed to download image")
+            else:
+                local_paths.append(image)
+
+        return local_paths
+
+    def cleanup_images(self, images: list):
+        """
+        Delete downloaded images from local storage.
+
+        :param images: List of local image paths.
+        """
+        for image in images:
+            if image.startswith('temp_image_'):
+                os.remove(image)
 
     def generate_output(self, prompt: str, image: list, model: AutoModel,
                         processor: AutoTokenizer, **kwargs) -> [Dict, str]:
@@ -109,14 +126,7 @@ class InternVLM():
         # TODO - Add model.chat args in model registry, pass them as additional kwargs
 
         # Download the image temporarily if a local path is not given, then delete it
-        if image.startswith('http://') or image.startswith('https://'):
-            local_image_path = 'temp_image.jpg'
-            try:
-                image_path = self.download_image(image, local_image_path)
-            except ValueError as e:
-                return {"error": str(e)}, ""
-        else:
-            image_path = image
+        image = self.download_images(image)
 
         history = kwargs["history"]
 
@@ -144,7 +154,7 @@ class InternVLM():
             response = {"response": gen_text}
 
         # Delete the image if it was downloaded
-        if image.startswith('http://') or image.startswith('https://'):
-            os.remove(image_path)
+        self.cleanup_images(image)
+
 
         return response, response_text
