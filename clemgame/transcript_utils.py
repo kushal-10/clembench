@@ -125,6 +125,14 @@ def build_transcript(interactions: Dict, experiment_config: Dict, game_instance:
                 ...
         # in case the content is a json with an image entry
         if isinstance(msg_content, dict):
+
+            # Start the div for the speaker message
+            transcript += f'<div speaker="{speaker}" class="msg {class_name}">\n'
+            transcript += f'  <p>{msg_raw}</p>\n'
+
+            # Prepare to collect all image elements
+            image_elements = []
+
             if "image" in msg_content:
                 transcript += f'<div speaker="{speaker}" class="msg {class_name}">\n'
                 transcript += f'  <p>{msg_raw}</p>\n'
@@ -138,9 +146,12 @@ def build_transcript(interactions: Dict, experiment_config: Dict, game_instance:
                     if not isinstance(image_src, list):
                         image_src = [image_src]
 
-                    transcript += (f'  <a title="{image_src}">'
-                                   f'<img style="width:100%" src="{image_src}" alt="{image_src}" />'
-                                   f'</a>\n')
+                    # Create image elements for each image source
+                    for src in image_src:
+                        image_elements.append(f'<a title="{src}">'
+                                              f'<img style="width:100%" src="{src}" alt="{src}" /></a>')
+                # Join all image elements and add to transcript
+                transcript += '  '.join(image_elements) + '\n'
                 transcript += '</div>\n'
         else:
             transcript += HTML_TEMPLATE.format(speaker, class_name, msg_raw)
