@@ -149,7 +149,7 @@ class InternVLM():
                 else:
                     fill = (255, 255, 255)
 
-                img = transforms.functional.pad(img, fill=fill)
+                img = transforms.functional.pad(img, padding=[0,0,0,0], fill=fill)
                 processed_images.append(img)
 
             gen_text, _ = model.chat(processor, prompt, processed_images,
