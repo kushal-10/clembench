@@ -1,11 +1,13 @@
 # Individual inference methods for InternLM X-Composer 2.5 7B
 from typing import Dict
 import torch
+from torchvision import transforms
 from PIL import Image
 from io import BytesIO
 import requests
 import os
 from transformers import AutoModel, AutoTokenizer
+
 
 
 class InternVLM():
@@ -138,12 +140,24 @@ class InternVLM():
 
         # Use CUDA to get the response
         with torch.autocast(device_type='cuda', dtype=torch.float16):
-            gen_text, _ = model.chat(processor, prompt, image,
-                                       do_sample=False,
-                                       num_beams=3,
-                                       top_p=1,
-                                       history=history,
-                                       use_meta=True)
+            # Process each image and handle channel mismatch
+            processed_images = []
+            for image_path in image:
+                img = Image.open(image_path)
+                if img.mode == 'RGBA':
+                    fill = (255, 255, 255, 255)
+                else:
+                    fill = (255, 255, 255)
+
+                img = transforms.functional.pad(img, fill=fill)
+                processed_images.append(img)
+
+            gen_text, _ = model.chat(processor, prompt, processed_images,
+                                     do_sample=False,
+                                     num_beams=3,
+                                     top_p=1,
+                                     history=history,
+                                     use_meta=True)
 
             # Unset top_p manually to avoid the following warning
             # UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
@@ -155,6 +169,5 @@ class InternVLM():
 
         # Delete the image if it was downloaded
         self.cleanup_images(image)
-
 
         return response, response_text
