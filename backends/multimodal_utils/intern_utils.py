@@ -156,7 +156,7 @@ class InternVLM():
                 transform = transforms.Compose([
                     transforms.ToTensor(),  # Convert image to torch.Tensor
                 ])
-                img_tensor = transform(img)
+                img_tensor = transform(img).unsqueeze(0)  # Add batch dimension
                 processed_images.append(img_tensor)
 
             gen_text, _ = model.chat(processor, prompt, processed_images,
