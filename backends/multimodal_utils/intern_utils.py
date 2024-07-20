@@ -89,12 +89,20 @@ class InternVLM():
                 response = requests.get(image)
                 if response.status_code == 200:
                     image = Image.open(BytesIO(response.content))
-                    image.save(local_path)
-                    local_paths.append(local_path)
-                else:
-                    raise ValueError("Failed to download image")
+
             else:
-                local_paths.append(image)
+                image = Image.open(image)
+
+            if image.mode == 'RGBA':
+                fill = (255, 255, 255, 255)
+            else:
+                fill = (255, 255, 255)
+
+            img = transforms.functional.pad(img, padding=[0, 0, 0, 0], fill=fill)
+
+            img.save(local_path)
+
+            local_paths.append(local_path)
 
         return local_paths
 
@@ -141,7 +149,7 @@ class InternVLM():
         # Use CUDA to get the response
         with torch.autocast(device_type='cuda', dtype=torch.float16):
             # Process each image and handle channel mismatch
-            processed_images = []
+            # processed_images = []
             # for image_path in image:
             #     img = Image.open(image_path)
             #     if img.mode == 'RGBA':
@@ -152,7 +160,7 @@ class InternVLM():
             #     img = transforms.functional.pad(img, padding=[0,0,0,0], fill=fill)
             #     processed_images.append(img)
 
-            gen_text, _ = model.chat(processor, prompt, processed_images,
+            gen_text, _ = model.chat(processor, prompt, image,
                                      do_sample=False,
                                      num_beams=3,
                                      top_p=1,
