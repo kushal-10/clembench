@@ -140,6 +140,7 @@ class InternVLM():
         # image = self.download_images(image)
 
         image = [Image.open(img) for img in image]
+        image = [torch.tensor(img) for img in image]
         history = kwargs["history"]
 
         # By default unset Gradient Calculation for inferencing
