@@ -140,9 +140,19 @@ class InternVLM():
         # Download the image temporarily if a local path is not given, then delete it
         # image = self.download_images(image)
 
-        image = [Image.open(img) for img in image]
-        image = [np.array(img) for img in image]
-        image = [torch.tensor(img) for img in image]
+        images = []
+        for img in image:
+            img = Image.open(img)
+            img = np.array(img)
+            if len(img.shape) == 2:  # If the image is grayscale
+                img = np.expand_dims(img, axis=2)
+            img = np.transpose(img, (2, 0, 1))  # Convert to (channels, height, width)
+            img = torch.tensor(img, dtype=torch.float32)
+            images.append(img)
+
+        image = [img.unsqueeze(0) if img.dim() == 3 else img for img in images]
+
+
         history = kwargs["history"]
 
         # By default unset Gradient Calculation for inferencing
