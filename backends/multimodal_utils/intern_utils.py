@@ -98,9 +98,9 @@ class InternVLM():
             else:
                 fill = (255, 255, 255)
 
-            img = transforms.functional.pad(img, padding=[0, 0, 0, 0], fill=fill)
+            image = transforms.functional.pad(image, padding=[0, 0, 0, 0], fill=fill)
 
-            img.save(local_path)
+            image.save(local_path)
 
             local_paths.append(local_path)
 
