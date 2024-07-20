@@ -141,20 +141,33 @@ class InternVLM():
         # image = self.download_images(image)
 
         images = []
-        for img in image:
-            img = Image.open(img)
+        for img_path in image:
+            img = Image.open(img_path)
 
             if img.mode == 'RGBA':
                 fill = (255, 255, 255, 255)
             else:
                 fill = (255, 255, 255)
 
-            img = transforms.functional.pad(img, padding=[0,0,0,0], fill=fill)
+            # Ensure dimensions are divisible by 560 by padding the image
+            H, W = img.size[1], img.size[0]
+            pad_H = (560 - (H % 560)) % 560
+            pad_W = (560 - (W % 560)) % 560
+
+            padding = (0, 0, pad_W, pad_H)  # (left, top, right, bottom)
+            img = transforms.functional.pad(img, padding=padding, fill=fill)
+
             img = np.array(img)
             img = torch.tensor(img, dtype=torch.float32)
+
+            # If image is RGB or RGBA, add the channel dimension
+            if img.dim() == 3:
+                img = img.permute(2, 0, 1)  # Convert to (C, H, W)
+
             images.append(img)
 
-        image = [img.unsqueeze(0) if img.dim() == 3 else img for img in images]
+        # Add batch dimension
+        image = [img.unsqueeze(0) for img in images]
 
 
         history = kwargs["history"]
