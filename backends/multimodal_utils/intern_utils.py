@@ -139,6 +139,7 @@ class InternVLM():
         # Download the image temporarily if a local path is not given, then delete it
         # image = self.download_images(image)
 
+        image = [Image.open(img) for img in image]
         history = kwargs["history"]
 
         # By default unset Gradient Calculation for inferencing
