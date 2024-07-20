@@ -6,6 +6,7 @@ from PIL import Image
 from io import BytesIO
 import requests
 import os
+import numpy as np
 from transformers import AutoModel, AutoTokenizer
 
 
@@ -140,6 +141,7 @@ class InternVLM():
         # image = self.download_images(image)
 
         image = [Image.open(img) for img in image]
+        image = [np.array(img) for img in image]
         image = [torch.tensor(img) for img in image]
         history = kwargs["history"]
 
