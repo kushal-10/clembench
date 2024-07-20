@@ -143,10 +143,14 @@ class InternVLM():
         images = []
         for img in image:
             img = Image.open(img)
+
+            if img.mode == 'RGBA':
+                fill = (255, 255, 255, 255)
+            else:
+                fill = (255, 255, 255)
+
+            img = transforms.functional.pad(img, padding=[0,0,0,0], fill=fill)
             img = np.array(img)
-            if len(img.shape) == 2:  # If the image is grayscale
-                img = np.expand_dims(img, axis=2)
-            img = np.transpose(img, (2, 0, 1))  # Convert to (channels, height, width)
             img = torch.tensor(img, dtype=torch.float32)
             images.append(img)
 
