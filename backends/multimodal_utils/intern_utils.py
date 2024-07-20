@@ -1,14 +1,11 @@
 # Individual inference methods for InternLM X-Composer 2.5 7B
 from typing import Dict
 import torch
-from torchvision import transforms
 from PIL import Image
 from io import BytesIO
 import requests
 import os
-import numpy as np
 from transformers import AutoModel, AutoTokenizer
-
 
 
 class InternVLM():
@@ -76,47 +73,21 @@ class InternVLM():
 
         return prompt_tokens
 
-    # def download_images(self, images: list) -> list:
-    #     """
-    #     Download images from URLs and save them locally.
-    #
-    #     :param images: List of image URLs or local paths.
-    #     :return: List of local paths to the downloaded images.
-    #     """
-    #     local_paths = []
-    #     for idx, image in enumerate(images):
-    #         if image.startswith('http://') or image.startswith('https://'):
-    #             local_path = f'temp_image_{idx}.jpg'
-    #             response = requests.get(image)
-    #             if response.status_code == 200:
-    #                 image = Image.open(BytesIO(response.content))
-    #
-    #         else:
-    #             image = Image.open(image)
-    #             local_path = f'temp_image_{idx}.jpg'
-    #
-    #         if image.mode == 'RGBA':
-    #             fill = (255, 255, 255, 255)
-    #         else:
-    #             fill = (255, 255, 255)
-    #
-    #         image = transforms.functional.pad(image, padding=[0, 0, 0, 0], fill=fill)
-    #
-    #         image.save(local_path)
-    #
-    #         local_paths.append(local_path)
-    #
-    #     return local_paths
-
-    def cleanup_images(self, images: list):
+    def download_image(self, image_url: str, save_path: str) -> str:
         """
-        Delete downloaded images from local storage.
+        Download an image from a URL and save it locally.
 
-        :param images: List of local image paths.
+        :param image_url: URL of the image to be downloaded.
+        :param save_path: Local path where the image will be saved.
+        :return: Path to the saved image.
         """
-        for image in images:
-            if image.startswith('temp_image_'):
-                os.remove(image)
+        response = requests.get(image_url)
+        if response.status_code == 200:
+            image = Image.open(BytesIO(response.content))
+            image.save(save_path)
+            return save_path
+        else:
+            raise ValueError("Failed to download image")
 
     def generate_output(self, prompt: str, image: list, model: AutoModel,
                         processor: AutoTokenizer, **kwargs) -> [Dict, str]:
@@ -138,42 +109,14 @@ class InternVLM():
         # TODO - Add model.chat args in model registry, pass them as additional kwargs
 
         # Download the image temporarily if a local path is not given, then delete it
-        # image = self.download_images(image)
-
-        images = []
-        for img_path in image_paths:
-            img = Image.open(img_path)
-
-            # Ensure correct image mode
-            if img.mode == 'RGBA':
-                fill = (255, 255, 255, 255)
-            else:
-                fill = (255, 255, 255)
-
-            # Pad image to be divisible by 560
-            H, W = img.size[1], img.size[0]
-            pad_H = (560 - (H % 560)) % 560
-            pad_W = (560 - (W % 560)) % 560
-
-            padding = (0, 0, pad_W, pad_H)  # (left, top, right, bottom)
-            img = TF.pad(img, padding=padding, fill=fill)
-
-            # Convert to numpy array and then to torch tensor
-            img = np.array(img)
-            img = torch.tensor(img, dtype=torch.float32)
-
-            # Ensure image has 3 channels
-            if img.dim() == 3:
-                img = img.permute(2, 0, 1)  # Convert to (C, H, W)
-
-            # Add batch dimension
-            img = img.unsqueeze(0)
-
-            images.append(img)
-
-        # Add batch dimension
-        image = [img.unsqueeze(0) for img in images]
-
+        if image.startswith('http://') or image.startswith('https://'):
+            local_image_path = 'temp_image.jpg'
+            try:
+                image_path = self.download_image(image, local_image_path)
+            except ValueError as e:
+                return {"error": str(e)}, ""
+        else:
+            image_path = image
 
         history = kwargs["history"]
 
@@ -185,24 +128,12 @@ class InternVLM():
 
         # Use CUDA to get the response
         with torch.autocast(device_type='cuda', dtype=torch.float16):
-            # Process each image and handle channel mismatch
-            # processed_images = []
-            # for image_path in image:
-            #     img = Image.open(image_path)
-            #     if img.mode == 'RGBA':
-            #         fill = (255, 255, 255, 255)
-            #     else:
-            #         fill = (255, 255, 255)
-            #
-            #     img = transforms.functional.pad(img, padding=[0,0,0,0], fill=fill)
-            #     processed_images.append(img)
-
             gen_text, _ = model.chat(processor, prompt, image,
-                                     do_sample=False,
-                                     num_beams=3,
-                                     top_p=1,
-                                     history=history,
-                                     use_meta=True)
+                                       do_sample=False,
+                                       num_beams=3,
+                                       top_p=1,
+                                       history=history,
+                                       use_meta=True)
 
             # Unset top_p manually to avoid the following warning
             # UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
@@ -213,6 +144,7 @@ class InternVLM():
             response = {"response": gen_text}
 
         # Delete the image if it was downloaded
-        self.cleanup_images(image)
+        if image.startswith('http://') or image.startswith('https://'):
+            os.remove(image_path)
 
         return response, response_text
