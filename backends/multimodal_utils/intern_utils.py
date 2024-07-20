@@ -141,28 +141,33 @@ class InternVLM():
         # image = self.download_images(image)
 
         images = []
-        for img_path in image:
+        for img_path in image_paths:
             img = Image.open(img_path)
 
+            # Ensure correct image mode
             if img.mode == 'RGBA':
                 fill = (255, 255, 255, 255)
             else:
                 fill = (255, 255, 255)
 
-            # Ensure dimensions are divisible by 560 by padding the image
+            # Pad image to be divisible by 560
             H, W = img.size[1], img.size[0]
             pad_H = (560 - (H % 560)) % 560
             pad_W = (560 - (W % 560)) % 560
 
             padding = (0, 0, pad_W, pad_H)  # (left, top, right, bottom)
-            img = transforms.functional.pad(img, padding=padding, fill=fill)
+            img = TF.pad(img, padding=padding, fill=fill)
 
+            # Convert to numpy array and then to torch tensor
             img = np.array(img)
             img = torch.tensor(img, dtype=torch.float32)
 
-            # If image is RGB or RGBA, add the channel dimension
+            # Ensure image has 3 channels
             if img.dim() == 3:
                 img = img.permute(2, 0, 1)  # Convert to (C, H, W)
+
+            # Add batch dimension
+            img = img.unsqueeze(0)
 
             images.append(img)
 
