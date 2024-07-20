@@ -92,6 +92,7 @@ class InternVLM():
 
             else:
                 image = Image.open(image)
+                local_path = f'temp_image_{idx}.jpg'
 
             if image.mode == 'RGBA':
                 fill = (255, 255, 255, 255)
