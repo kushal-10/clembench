@@ -75,37 +75,37 @@ class InternVLM():
 
         return prompt_tokens
 
-    def download_images(self, images: list) -> list:
-        """
-        Download images from URLs and save them locally.
-
-        :param images: List of image URLs or local paths.
-        :return: List of local paths to the downloaded images.
-        """
-        local_paths = []
-        for idx, image in enumerate(images):
-            if image.startswith('http://') or image.startswith('https://'):
-                local_path = f'temp_image_{idx}.jpg'
-                response = requests.get(image)
-                if response.status_code == 200:
-                    image = Image.open(BytesIO(response.content))
-
-            else:
-                image = Image.open(image)
-                local_path = f'temp_image_{idx}.jpg'
-
-            if image.mode == 'RGBA':
-                fill = (255, 255, 255, 255)
-            else:
-                fill = (255, 255, 255)
-
-            image = transforms.functional.pad(image, padding=[0, 0, 0, 0], fill=fill)
-
-            image.save(local_path)
-
-            local_paths.append(local_path)
-
-        return local_paths
+    # def download_images(self, images: list) -> list:
+    #     """
+    #     Download images from URLs and save them locally.
+    #
+    #     :param images: List of image URLs or local paths.
+    #     :return: List of local paths to the downloaded images.
+    #     """
+    #     local_paths = []
+    #     for idx, image in enumerate(images):
+    #         if image.startswith('http://') or image.startswith('https://'):
+    #             local_path = f'temp_image_{idx}.jpg'
+    #             response = requests.get(image)
+    #             if response.status_code == 200:
+    #                 image = Image.open(BytesIO(response.content))
+    #
+    #         else:
+    #             image = Image.open(image)
+    #             local_path = f'temp_image_{idx}.jpg'
+    #
+    #         if image.mode == 'RGBA':
+    #             fill = (255, 255, 255, 255)
+    #         else:
+    #             fill = (255, 255, 255)
+    #
+    #         image = transforms.functional.pad(image, padding=[0, 0, 0, 0], fill=fill)
+    #
+    #         image.save(local_path)
+    #
+    #         local_paths.append(local_path)
+    #
+    #     return local_paths
 
     def cleanup_images(self, images: list):
         """
@@ -137,7 +137,7 @@ class InternVLM():
         # TODO - Add model.chat args in model registry, pass them as additional kwargs
 
         # Download the image temporarily if a local path is not given, then delete it
-        image = self.download_images(image)
+        # image = self.download_images(image)
 
         history = kwargs["history"]
 
