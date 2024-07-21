@@ -190,9 +190,9 @@ class InternVLM():
             # Cast into Clemgame compatible form
             response = {"response": gen_text}
 
-        print(f"Inside InternUTILS responsetext - {response_text} \n\n")
+        print(f"Inside InternUTILS responsetexty - {response_text} \n\n")
 
         # Delete the image cache
-        shutil.rmtree(os.apth.join(os.getcwd()), IMG_CACHE)
+        shutil.rmtree(os.path.join(os.getcwd()), IMG_CACHE)
 
         return response, response_text
