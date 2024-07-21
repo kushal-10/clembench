@@ -1,16 +1,38 @@
 # Individual inference methods for InternLM X-Composer 2.5 7B
 from typing import Dict
 import torch
+import torchvision.transforms.functional as F
 from PIL import Image
 from io import BytesIO
 import requests
 import os
 from transformers import AutoModel, AutoTokenizer
 
+IMG_CACHE = 'image_cache'
 
 class InternVLM():
     def __init__(self):
         pass
+
+    def custom_padding(self, img):
+        padding = (0, 0, 0, 0)
+        num_channels = len(img.getbands())
+        if num_channels == 4:  # RGBA
+            fill_color = (255, 255, 255, 255)
+        elif num_channels == 3:  # RGB
+            fill_color = (255, 255, 255)
+        else:
+            raise ValueError(f"Unsupported number of channels: {num_channels}")
+
+        padded_img = F.pad(img, padding, fill=fill_color)
+        return padded_img
+
+    def pad_image(self, image_path):
+        img = Image.open(image_path)
+        padded_img = self.custom_padding(img)
+        if padded_img.mode == 'RGBA':
+            padded_img = padded_img.convert('RGB')  # Convert RGBA to RGB
+        return padded_img
 
     def prepare_inputs(self, messages: list[Dict], **kwargs):
         """
@@ -89,6 +111,38 @@ class InternVLM():
         else:
             raise ValueError("Failed to download image")
 
+    def preprocess_image(self, image_list):
+        """
+        InternVLM does not support RGBA images
+        Only supports image, when a local path is given [Images needs to be downloaded temporarily for matchit]
+
+        :param image_list: A list of images to be preprocessed.
+        :return: The list containing paths to the preprocessed images
+        """
+        temp_dir = os.path.join(os.getcwd(), IMG_CACHE)
+        if os.path.exists(temp_dir):
+            os.rmdir(temp_dir)
+        os.mkdir(temp_dir)
+
+        processed_image_paths = []
+        for i, image in enumerate(image_list):
+            save_path = os.path.join(temp_dir, f'{i}.jpg')
+
+            if image.startswith('http'):
+                response = requests.get(image)
+                if response.status_code == 200:
+                    image = Image.open(BytesIO(response.content))
+            else:
+                image = Image.open(image)
+
+            padded_img = self.pad_image(image)
+
+            padded_img.save(save_path)
+            processed_image_paths.append(save_path)
+
+        return processed_image_paths
+
+
     def generate_output(self, prompt: str, image: list, model: AutoModel,
                         processor: AutoTokenizer, **kwargs) -> [Dict, str]:
         """
@@ -108,15 +162,7 @@ class InternVLM():
         # TODO - Raise Warning When Using CPU and not CUDA
         # TODO - Add model.chat args in model registry, pass them as additional kwargs
 
-        # Download the image temporarily if a local path is not given, then delete it
-        if image.startswith('http://') or image.startswith('https://'):
-            local_image_path = 'temp_image.jpg'
-            try:
-                image_path = self.download_image(image, local_image_path)
-            except ValueError as e:
-                return {"error": str(e)}, ""
-        else:
-            image_path = image
+        image = self.preprocess_image(image)
 
         history = kwargs["history"]
 
@@ -143,8 +189,7 @@ class InternVLM():
             # Cast into Clemgame compatible form
             response = {"response": gen_text}
 
-        # Delete the image if it was downloaded
-        if image.startswith('http://') or image.startswith('https://'):
-            os.remove(image_path)
+        # Delete the image cache
+        os.rmdir(IMG_CACHE)
 
         return response, response_text
