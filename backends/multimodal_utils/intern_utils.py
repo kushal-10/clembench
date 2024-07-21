@@ -27,8 +27,8 @@ class InternVLM():
         padded_img = F.pad(img, padding, fill=fill_color)
         return padded_img
 
-    def pad_image(self, image_path):
-        img = Image.open(image_path)
+    def pad_image(self, img):
+        # img = Image.open(image_path)
         padded_img = self.custom_padding(img)
         if padded_img.mode == 'RGBA':
             padded_img = padded_img.convert('RGB')  # Convert RGBA to RGB
