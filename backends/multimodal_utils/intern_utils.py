@@ -6,6 +6,7 @@ from PIL import Image
 from io import BytesIO
 import requests
 import os
+import shutil
 from transformers import AutoModel, AutoTokenizer
 
 IMG_CACHE = 'image_cache'
@@ -121,7 +122,7 @@ class InternVLM():
         """
         temp_dir = os.path.join(os.getcwd(), IMG_CACHE)
         if os.path.exists(temp_dir):
-            os.rmdir(temp_dir)
+            shutil.rmtree(temp_dir)
         os.mkdir(temp_dir)
 
         processed_image_paths = []
@@ -190,6 +191,6 @@ class InternVLM():
             response = {"response": gen_text}
 
         # Delete the image cache
-        os.rmdir(IMG_CACHE)
+        shutil.rmtree(os.apth.join(os.getcwd()), IMG_CACHE)
 
         return response, response_text
