@@ -172,7 +172,7 @@ class InternVLM():
 
         model = model.cuda().eval()
         model.tokenizer = processor
-
+        print(f"Inside InternUTILS prompt - {prompt} \n\n")
         # Use CUDA to get the response
         with torch.autocast(device_type='cuda', dtype=torch.float16):
             gen_text, _ = model.chat(processor, prompt, image,
@@ -189,6 +189,8 @@ class InternVLM():
 
             # Cast into Clemgame compatible form
             response = {"response": gen_text}
+
+        print(f"Inside InternUTILS responsetext - {response_text} \n\n")
 
         # Delete the image cache
         shutil.rmtree(os.apth.join(os.getcwd()), IMG_CACHE)
