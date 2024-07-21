@@ -193,6 +193,6 @@ class InternVLM():
         print(f"Inside InternUTILS responsetexty - {response_text} \n\n")
 
         # Delete the image cache
-        shutil.rmtree(os.path.join(os.getcwd()), IMG_CACHE)
+        shutil.rmtree(IMG_CACHE)
 
         return response, response_text
