@@ -12,12 +12,12 @@ import torch
 import torchvision.transforms.functional as F
 from transformers import AutoModel, AutoTokenizer
 
-from backends.multimodal_utils.base_utils import BaseVLM
+from backends.multimodal_utils.base_utils import BaseMLLM
 
 IMG_CACHE_DIR = 'image_cache'
 
 
-class InternVLM(BaseVLM):
+class InternMLLM(BaseMLLM):
 
     @staticmethod
     def custom_padding(image: Image.Image) -> Image.Image:

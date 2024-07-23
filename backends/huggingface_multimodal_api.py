@@ -8,8 +8,7 @@ from transformers import (AutoProcessor, AutoModelForVision2Seq, IdeficsForVisio
                           AutoConfig, AutoModel, AutoTokenizer)
 
 import backends
-from backends.multimodal_utils.llava_utils import LlavaVLM
-from backends.multimodal_utils.intern_utils import InternVLM
+from backends.multimodal_utils.intern_utils import InternMLLM
 
 # CONSTANTS
 MODEL_LOADER_MAP = {
@@ -19,7 +18,6 @@ MODEL_LOADER_MAP = {
 }
 
 RESPONSE_MAP = {
-    "Vision2Seq": LlavaVLM,
     "Intern": InternVLM
 }
 
