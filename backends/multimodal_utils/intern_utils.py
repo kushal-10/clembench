@@ -1,14 +1,17 @@
 # Individual inference methods for InternLM X-Composer 2.5 7B
 
 import os
-import torch
 import shutil
+from typing import Dict, List, Any, Union, Tuple
+
 import requests
 from PIL import Image
 from io import BytesIO
-from typing import Dict, List, Any, Union
+
+import torch
 import torchvision.transforms.functional as F
 from transformers import AutoModel, AutoTokenizer
+
 from backends.multimodal_utils.base_utils import BaseVLM
 
 IMG_CACHE_DIR = 'image_cache'
