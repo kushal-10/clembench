@@ -1,21 +1,22 @@
 # Individual inference methods for InternLM X-Composer 2.5 7B
 from typing import Dict
-import torch
-import torchvision.transforms.functional as F
-from PIL import Image
-from io import BytesIO
 import requests
 import os
 import shutil
+from PIL import Image
+from io import BytesIO
+import torch
+import torchvision.transforms.functional as F
 from transformers import AutoModel, AutoTokenizer
+
+from backends.multimodal_utils.base_utils import BaseVLM
 
 IMG_CACHE = 'image_cache'
 
-class InternVLM():
-    def __init__(self):
-        pass
+class InternVLM(BaseVLM):
 
-    def custom_padding(self, img):
+    @staticmethod
+    def custom_padding(img):
         padding = (0, 0, 0, 0)
         num_channels = len(img.getbands())
         if num_channels == 4:  # RGBA
@@ -26,13 +27,10 @@ class InternVLM():
             raise ValueError(f"Unsupported number of channels: {num_channels}")
 
         padded_img = F.pad(img, padding, fill=fill_color)
-        return padded_img
 
-    def pad_image(self, img):
-        # img = Image.open(image_path)
-        padded_img = self.custom_padding(img)
         if padded_img.mode == 'RGBA':
             padded_img = padded_img.convert('RGB')  # Convert RGBA to RGB
+
         return padded_img
 
     def prepare_inputs(self, messages: list[Dict], **kwargs):
@@ -136,7 +134,7 @@ class InternVLM():
             else:
                 image = Image.open(image)
 
-            padded_img = self.pad_image(image)
+            padded_img = self.custom_padding(image)
 
             padded_img.save(save_path)
             processed_image_paths.append(save_path)
@@ -172,7 +170,7 @@ class InternVLM():
 
         model = model.cuda().eval()
         model.tokenizer = processor
-        print(f"Inside InternUTILS prompt - {prompt} \n\n")
+
         # Use CUDA to get the response
         with torch.autocast(device_type='cuda', dtype=torch.float16):
             gen_text, _ = model.chat(processor, prompt, image,
@@ -189,8 +187,6 @@ class InternVLM():
 
             # Cast into Clemgame compatible form
             response = {"response": gen_text}
-
-        print(f"Inside InternUTILS responsetexty - {response_text} \n\n")
 
         # Delete the image cache
         shutil.rmtree(IMG_CACHE)
