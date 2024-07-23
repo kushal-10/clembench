@@ -1,25 +1,37 @@
 # Individual inference methods for InternLM X-Composer 2.5 7B
-from typing import Dict
-import requests
+
 import os
+import torch
 import shutil
-from abc import abstractmethod
+import requests
 from PIL import Image
 from io import BytesIO
-import torch
+from typing import Dict, List, Any, Union
 import torchvision.transforms.functional as F
 from transformers import AutoModel, AutoTokenizer
-
 from backends.multimodal_utils.base_utils import BaseVLM
 
-IMG_CACHE = 'image_cache'
+IMG_CACHE_DIR = 'image_cache'
+
 
 class InternVLM(BaseVLM):
 
     @staticmethod
-    def custom_padding(img):
-        padding = (0, 0, 0, 0)
-        num_channels = len(img.getbands())
+    def custom_padding(image: Image.Image) -> Image.Image:
+        """
+        Apply custom white padding to an image and convert it to RGB if it is in RGBA mode.
+        Images in mm_referencegame are in RGBA format, InternVL does not support this.
+
+        :param image: A PIL Image object to be padded.
+        :return: A padded PIL Image object, converted to RGB if necessary.
+        """
+
+        # Padding configuration
+        # Set to 0 as its required to update the fill.
+        padding_size = (0, 0, 0, 0)
+        num_channels = len(image.getbands())
+
+        # Determine fill color based on the number of channels
         if num_channels == 4:  # RGBA
             fill_color = (255, 255, 255, 255)
         elif num_channels == 3:  # RGB
@@ -27,171 +39,189 @@ class InternVLM(BaseVLM):
         else:
             raise ValueError(f"Unsupported number of channels: {num_channels}")
 
-        padded_img = F.pad(img, padding, fill=fill_color)
+        # Apply padding to the image
+        padded_image = F.pad(image, padding_size, fill=fill_color)
 
-        if padded_img.mode == 'RGBA':
-            padded_img = padded_img.convert('RGB')  # Convert RGBA to RGB
+        # Convert RGBA image to RGB
+        if padded_image.mode == 'RGBA':
+            padded_image = padded_image.convert('RGB')
 
-        return padded_img
+        return padded_image
 
-
-    def prepare_inputs(self, messages: list[Dict], **kwargs):
+    @staticmethod
+    def prepare_inputs(messages: List[Dict[str, Any]], **kwargs) -> Dict[str, Any]:
         """
-        Returns a separate history, the prompt and a list of images to be passed to the model
+        Prepare the inputs for the model, including the prompt, images, and conversation history.
 
-        :param messages: A list[Dict] type object passed to the backend containing 'role', 'content' and 'image'
-        :return history, prompt, image: Inputs to the model
+        :param messages: A list of dictionaries, where each dictionary contains:
+                         - 'role': The role of the message sender ('user' or 'assistant').
+                         - 'content': The text content of the message.
+                         - 'image': Optional; a single image URL (str) or a list of image URLs (List[str]).
+        :param kwargs: Additional keyword arguments that may be used in the process.
+        :return: A dictionary containing:
+                 - 'prompt': The final prompt to be used by the model.
+                 - 'image': A list of image URLs to be processed.
+                 - 'kwargs': A dictionary with 'history' (list of user-assistant message pairs).
         """
-        history = []
-        image = []
+        conversation_history = []
+        images = []
         image_counter = 0
-        prev_user_msg = ""
+        previous_user_message = ""
 
-        for m in messages:
-            if m['role'] == 'user':
-                prev_user_msg = m['content']
-                if 'image' in m:
-                    if isinstance(m['image'], str):
-                        # A single image is passed
+        for message in messages:
+            if message['role'] == 'user':
+                previous_user_message = message['content']
+                if 'image' in message:
+                    if isinstance(message['image'], str):
+                        # Single image
                         image_counter += 1
-                        prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
-                        image.append(m['image'])
-                    elif isinstance(m['image'], list):
-                        # A list of images is passed
-                        for img in m['image']:
+                        previous_user_message = f"Image{image_counter} <ImageHere>; " + previous_user_message
+                        images.append(message['image'])
+                    elif isinstance(message['image'], list):
+                        # List of images
+                        for img in message['image']:
                             image_counter += 1
-                            prev_user_msg = f"Image{image_counter} <ImageHere>; " + prev_user_msg
-                            image.append(img)
+                            previous_user_message = f"Image{image_counter} <ImageHere>; " + previous_user_message
+                            images.append(img)
                     else:
-                        print("Please pass a valid type of image in the message - Either a str or List[str]")
+                        raise ValueError("Invalid image type in message - should be str or List[str]")
 
-            elif m['role'] == 'assistant':
-                # Append User+Assistant Message in Sequence
-                history.append((prev_user_msg, m['content']))
+            elif message['role'] == 'assistant':
+                # Append user and assistant messages in sequence
+                conversation_history.append((previous_user_message, message['content']))
 
         return {
-            "prompt": prev_user_msg,
-            "image": image,
-            "kwargs": {"history": history}
+            "prompt": previous_user_message,
+            "image": images,
+            "kwargs": {"history": conversation_history}
         }
 
-    def get_tokens(self, prompt: str, processor: AutoTokenizer, **kwargs):
+    @staticmethod
+    def get_tokens(prompt: str, processor: AutoTokenizer, **kwargs) -> List[str]:
         """
-        Get the tokens passed to the model for context check
+        Generate tokens for the given prompt and conversation history.
 
-        :param prompt: The current prompt passed to the model
-        :param processor: The processor used for the model
-        :param kwargs: The kwargs passed to the model [history,...]
+        :param prompt: The current prompt to be tokenized.
+        :param processor: The tokenizer used for tokenizing the prompt and history.
+        :param kwargs: Additional keyword arguments, expecting 'history' which is a list of tuples (user message, assistant response).
 
-        :return: The tokens passed to the model
+        :return: A list of tokens generated from the combined prompt and conversation history.
         """
 
-        history = kwargs["history"]
+        # Extract conversation history from kwargs
+        history = kwargs.get("history")
+        if history is None:
+            raise KeyError("The 'history' keyword argument is required and missing.")
 
-        collect_history = ""
-        for h in history:
-            collect_history += h[0] + h[1]
-        prompt_text = prompt + collect_history
-        prompt_tokens = processor.tokenize(prompt_text)
+        # Combine the prompt with the conversation history
+        combined_text = prompt + "".join([user_msg + assistant_response for user_msg, assistant_response in history])
 
-        return prompt_tokens
+        # Tokenize the combined text
+        tokens = processor.tokenize(combined_text)
 
-    def download_image(self, image_url: str, save_path: str) -> str:
+        return tokens
+
+    def preprocess_image(self, image_list: List[Union[str, Image.Image]]) -> List[str]:
         """
-        Download an image from a URL and save it locally.
+        Preprocess a list of images (by downloading them first, if URLs are provided), applying padding, and saving them locally.
 
-        :param image_url: URL of the image to be downloaded.
-        :param save_path: Local path where the image will be saved.
-        :return: Path to the saved image.
+        :param image_list: A list of image sources, where each item can be a local image path or a URL of the image.
+        :return: A list of paths to the preprocessed and saved images.
         """
-        response = requests.get(image_url)
-        if response.status_code == 200:
-            image = Image.open(BytesIO(response.content))
-            image.save(save_path)
-            return save_path
-        else:
-            raise ValueError("Failed to download image")
 
-    def preprocess_image(self, image_list):
-        """
-        InternVLM does not support RGBA images
-        Only supports image, when a local path is given [Images needs to be downloaded temporarily for matchit]
-
-        :param image_list: A list of images to be preprocessed.
-        :return: The list containing paths to the preprocessed images
-        """
-        temp_dir = os.path.join(os.getcwd(), IMG_CACHE)
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
-        os.mkdir(temp_dir)
+        # Define the path for temporary image storage
+        img_dir = os.path.join(os.getcwd(), IMG_CACHE_DIR)
+        if os.path.exists(img_dir):
+            shutil.rmtree(img_dir)
+        os.makedirs(img_dir)
 
         processed_image_paths = []
-        for i, image in enumerate(image_list):
-            save_path = os.path.join(temp_dir, f'{i}.jpg')
+        for index, image_source in enumerate(image_list):
+            save_path = os.path.join(img_dir, f'{index}.jpg')
 
-            if image.startswith('http'):
-                response = requests.get(image)
-                if response.status_code == 200:
+            try:
+                if isinstance(image_source, str) and image_source.startswith('http'):
+                    # Download image from URL
+                    response = requests.get(image_source)
+                    response.raise_for_status()
                     image = Image.open(BytesIO(response.content))
-            else:
-                image = Image.open(image)
+                elif isinstance(image_source, str):
+                    # Load image from local path
+                    image = Image.open(image_source)
+                elif isinstance(image_source, Image.Image):
+                    # Use the provided PIL Image object directly
+                    image = image_source
+                else:
+                    raise ValueError(f"Invalid image source: {image_source}")
 
-            padded_img = self.custom_padding(image)
+                # Apply custom padding to the image
+                padded_image = self.custom_padding(image)
 
-            padded_img.save(save_path)
-            processed_image_paths.append(save_path)
+                # Save the preprocessed image
+                padded_image.save(save_path)
+                processed_image_paths.append(save_path)
+
+            except Exception as e:
+                raise ValueError(f"Failed to process image '{image_source}': {e}")
 
         return processed_image_paths
 
-
-
-    def generate_outputs(self, prompt: str, image: list, model: AutoModel,
-                        processor: AutoTokenizer, **kwargs) -> [Dict, str]:
+    def generate_outputs(self, prompt: str, images: List[str], model: AutoModel,
+                         processor: AutoTokenizer, **kwargs) -> Tuple[Dict[str, Any], str]:
         """
-        Generate Outputs [response, response_text] for InternLM type Models
-        Ref - https://huggingface.co/internlm/internlm-xcomposer2d5-7b
+        Generate model outputs given a prompt, images, and additional parameters.
 
         :param prompt: The text prompt to be used for generating the response.
-        :param image: A list of images to be included in the model's input.
+        :param images: A list of image URLs or paths to be included in the model's input.
         :param model: The model used for generating the output. This should be compatible with InternLM type models.
-        :param processor: The processor/tokenizer used to preprocess the prompt.
-        :param **kwargs: Additional keyword arguments that may be required by the model or tokenizer.
-
-        :return response: The raw output from the model.
-        :return response_text: The decoded text response generated by the model.
+        :param processor: The tokenizer used to preprocess the prompt and handle the input.
+        :param kwargs: Additional keyword arguments for the model, expected to include 'history'.
+        :return:
+             - response (Dict[str, Any]): The raw output from the model, formatted as a dictionary.
+             - response_text (str): The decoded text response generated by the model.
         """
 
-        # TODO - Raise Warning When Using CPU and not CUDA
-        # TODO - Add model.chat args in model registry, pass them as additional kwargs
+        # Ensure image preprocessing
+        # Works for mm_mapworld, but is required for matchit (download images) and mm_referencegame (convert RGBA to RBG)
+        processed_image_paths = self.preprocess_image(images)
 
-        image = self.preprocess_image(image)
+        # Retrieve conversation history from kwargs
+        history = kwargs.get("history")
+        if history is None:
+            raise KeyError("The 'history' keyword argument is required and missing.")
 
-        history = kwargs["history"]
-
-        # By default unset Gradient Calculation for inferencing
+        # Disable gradient calculation for inference
         torch.set_grad_enabled(False)
 
+        # Prepare model for inference
         model = model.cuda().eval()
         model.tokenizer = processor
 
-        # Use CUDA to get the response
-        with torch.autocast(device_type='cuda', dtype=torch.float16):
-            gen_text, _ = model.chat(processor, prompt, image,
-                                       do_sample=False,
-                                       num_beams=3,
-                                       top_p=1,
-                                       history=history,
-                                       use_meta=True)
+        # Generate model output using CUDA
+        try:
+            with torch.autocast(device_type='cuda', dtype=torch.float16):
+                gen_text, _ = model.chat(
+                    processor,
+                    prompt,
+                    processed_image_paths,
+                    do_sample=False,
+                    num_beams=3,
+                    top_p=1,
+                    history=history,
+                    use_meta=True
+                )
 
-            # Unset top_p manually to avoid the following warning
-            # UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-
+            # Process and clean response text
             response_text = gen_text.strip()
 
-            # Cast into Clemgame compatible form
+            # Format response
             response = {"response": gen_text}
 
-        # Delete the image cache
-        shutil.rmtree(IMG_CACHE)
+        except RuntimeError as e:
+            raise RuntimeError(f"Model execution failed: {e}")
+
+        finally:
+            # Clean up cached images
+            shutil.rmtree(IMG_CACHE_DIR, ignore_errors=True)
 
         return response, response_text
