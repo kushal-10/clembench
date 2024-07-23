@@ -18,7 +18,7 @@ MODEL_LOADER_MAP = {
 }
 
 RESPONSE_MAP = {
-    "Intern": InternVLM
+    "Intern": InternMLLM
 }
 
 FALLBACK_CONTEXT_SIZE = 256
