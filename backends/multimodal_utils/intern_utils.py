@@ -3,6 +3,7 @@ from typing import Dict
 import requests
 import os
 import shutil
+from abc import abstractmethod
 from PIL import Image
 from io import BytesIO
 import torch
@@ -33,6 +34,7 @@ class InternVLM(BaseVLM):
 
         return padded_img
 
+    @abstractmethod
     def prepare_inputs(self, messages: list[Dict], **kwargs):
         """
         Returns a separate history, the prompt and a list of images to be passed to the model
@@ -142,6 +144,7 @@ class InternVLM(BaseVLM):
         return processed_image_paths
 
 
+    @abstractmethod
     def generate_output(self, prompt: str, image: list, model: AutoModel,
                         processor: AutoTokenizer, **kwargs) -> [Dict, str]:
         """
