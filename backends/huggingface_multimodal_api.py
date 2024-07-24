@@ -168,7 +168,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.context_size = get_context_limit(model_spec)
 
         print(self.multimodal_model)
-        print(self.multimodal_model['dtype'])
+        print(getattr(self.multimodal_model, 'dtype', None))
+        print(getattr(self.multimodal_model, 'torch_dtype', None))
 
         # Use the appropriate custom MLLM class to process inputs and generate outputs
         model_class_str = model_spec['model_class']
