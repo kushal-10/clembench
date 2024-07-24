@@ -6,20 +6,10 @@ from typing import List, Dict, Tuple, Any
 import torch
 from transformers import (AutoProcessor, AutoModelForVision2Seq, IdeficsForVisionText2Text,
                           AutoConfig, AutoModel, AutoTokenizer)
+import importlib
 
 import backends
 from backends.multimodal_utils.intern_utils import InternMLLM
-#
-# # CONSTANTS
-# MODEL_LOADER_MAP = {
-#     "Idefics": IdeficsForVisionText2Text,
-#     "Vision2Seq": AutoModelForVision2Seq,
-#     "Intern": AutoModel
-# }
-#
-# RESPONSE_MAP = {
-#     "Intern": InternMLLM
-# }
 
 FALLBACK_CONTEXT_SIZE = 256
 logger = backends.get_logger(__name__)
@@ -109,6 +99,10 @@ def load_model(model_spec: backends.ModelSpec):
     hf_model_str = model_spec['huggingface_id']  # Get the model name
 
     model_type = model_spec['model_type']  # Use the appropriate Auto class to load the model
+    module_path, class_name = model_type.rsplit('.', 1)
+    module = importlib.import_module(module_path)
+    model_type = getattr(module, class_name)
+
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
     use_bf16 = getattr(model_spec, 'use_bf16', False)
     not_distributed = getattr(model_spec, 'not_distributed', False)
@@ -163,7 +157,10 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model_type = model_spec['model_type']
         self.model_name = model_spec['model_name']
-        self.response_type = model_spec['response_type']
+        self.response_type = model_spec['response_type']  # Use the appropriate Auto class to load the model
+        module_path, class_name = self.response_type.rsplit('.', 1)
+        module = importlib.import_module(module_path)
+        self.response_type = getattr(module, class_name)
         self.processor = load_processor(model_spec)
         self.multimodal_model = load_model(model_spec)
         self.split_prefix = model_spec['output_split_prefix']
