@@ -200,17 +200,17 @@ class InternMLLM(BaseMLLM):
 
         # Generate model output using CUDA
         try:
-            # with torch.autocast(device_type=device, dtype="auto"):
-            gen_text, _ = model.chat(
-                handler,
-                prompt,
-                processed_image_paths,
-                do_sample=False,
-                num_beams=3,
-                top_p=1,  # Unset top_p, to avoid a UserWarning - conflict between do_sample and top_p
-                history=history,
-                use_meta=True
-            )
+            with torch.autocast(device_type=device, dtype="auto"):
+                gen_text, _ = model.chat(
+                    handler,
+                    prompt,
+                    processed_image_paths,
+                    do_sample=False,
+                    num_beams=3,
+                    top_p=1,  # Unset top_p, to avoid a UserWarning - conflict between do_sample and top_p
+                    history=history,
+                    use_meta=True
+                )
 
             # Process and clean response text
             response_text = gen_text.strip()
