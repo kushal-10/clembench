@@ -59,7 +59,8 @@ def check_context_limit(context_size: int, prompt_tokens: list, max_new_tokens: 
 # MODEL UTILS
 def load_processor_or_tokenizer(model_spec: backends.ModelSpec):
     """
-    Load processor/tokenizer from AutoProcessor/AutoTokenizer for a specific model (Example - LlavaProcessor/InternLM2Tokenizer).
+    Load processor/tokenizer from AutoProcessor/AutoTokenizer for a specific model
+    (Ex. LlavaProcessor/InternLM2Tokenizer).
     Some models use AutoTokenizer and handle image processing separately (InternLM, for example)
 
     :param model_spec: Contains definitions the model to be used, loaded from Model Registry.
@@ -185,7 +186,8 @@ class HuggingfaceMultimodalModel(backends.Model):
                     {"role": "user", "content": "Are there any clouds in the image? Answer with only "Yes" or "No"."},
                     {"role": "assistant", "content": "Yes"},
                     {"role": "user", "content": "This seems correct."},
-                    {'role': 'user', 'content': 'Are there any chickens in the image? Answer with only "Yes" or "No".', 'image': 'games/cloudgame/resources/images/3.jpg'}
+                    {'role': 'user', 'content': 'Are there any chickens in the image? Answer with only "Yes" or "No".',
+                     'image': 'games/cloudgame/resources/images/3.jpg'}
                 ]
         :return: the continuation
         """
@@ -201,11 +203,11 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         inputs = self.model_class.prepare_inputs(messages=messages, **model_kwargs)
 
-        prompt_text, images, processor_kwargs = inputs['prompt'], inputs['images'], inputs['processor_kwargs']
+        prompt_text, images, output_kwargs = inputs['prompt'], inputs['images'], inputs['output_kwargs']
 
         print(f"\n\n ################## Check Input Prompt Text in BACKEND: ################## \n{prompt_text} \n\n")
 
-        prompt_tokens = self.model_class.get_tokens(prompt=prompt_text, handler=self.input_handler, **processor_kwargs)
+        prompt_tokens = self.model_class.get_tokens(prompt=prompt_text, handler=self.input_handler, **output_kwargs)
 
         # Check context limit
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
@@ -219,7 +221,9 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
 
-        response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=images, model=self.multimodal_model, handler=self.input_handler, **processor_kwargs)
+        response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=images,
+                                                                    model=self.multimodal_model,
+                                                                    handler=self.input_handler, **output_kwargs)
 
         print(f"\n\n################## Check Response Text in BACKEND: ################## \n{response_text} \n\n")
 

@@ -97,11 +97,11 @@ class InternMLLM(BaseMLLM):
         return {
             "prompt": previous_user_message,
             "images": images,
-            "processor_kwargs": {"history": conversation_history, "device": kwargs.get('device')}
+            "output_kwargs": {"history": conversation_history, "device": kwargs.get('device')}
         }
 
     @staticmethod
-    def get_tokens(prompt: str, handler: AutoTokenizer, **kwargs) -> List[str]:
+    def get_tokens(prompt: str, handler: AutoTokenizer, **output_kwargs) -> List[str]:
         """
         Generate tokens for the given prompt and conversation history.
 
@@ -113,7 +113,7 @@ class InternMLLM(BaseMLLM):
         """
 
         # Extract conversation history from kwargs
-        history = kwargs.get("history")
+        history = output_kwargs.get("history")
 
         # Combine the prompt with the conversation history
         combined_text = prompt + "".join([user_msg + assistant_response for user_msg, assistant_response in history])
