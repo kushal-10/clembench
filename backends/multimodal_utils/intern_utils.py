@@ -113,8 +113,6 @@ class InternMLLM(BaseMLLM):
 
         # Extract conversation history from kwargs
         history = kwargs.get("history")
-        if history is None:
-            raise KeyError("The 'history' keyword argument is required and missing.")
 
         # Combine the prompt with the conversation history
         combined_text = prompt + "".join([user_msg + assistant_response for user_msg, assistant_response in history])
@@ -170,14 +168,14 @@ class InternMLLM(BaseMLLM):
         return processed_image_paths
 
     def generate_outputs(self, prompt: str, images: List[str], model: AutoModel,
-                         processor: AutoTokenizer, **kwargs) -> Tuple[Dict[str, Any], str]:
+                         handler: AutoTokenizer, **kwargs) -> Tuple[Dict[str, Any], str]:
         """
         Generate model outputs given a prompt, images, and additional parameters.
 
         :param prompt: The text prompt to be used for generating the response.
         :param images: A list of image URLs or paths to be included in the model's input.
         :param model: The model used for generating the output. This should be compatible with InternLM type models.
-        :param processor: The tokenizer used to preprocess the prompt and handle the input.
+        :param handler: The tokenizer used to preprocess the prompt and handle the input.
         :param kwargs: Additional keyword arguments for the model, expected to include 'history'.
         :return:
              - response (Dict[str, Any]): The raw output from the model, formatted as a dictionary.
@@ -190,26 +188,24 @@ class InternMLLM(BaseMLLM):
 
         # Retrieve conversation history from kwargs
         history = kwargs.get("history")
-        if history is None:
-            raise KeyError("The 'history' keyword argument is required and missing.")
 
         # Disable gradient calculation for inference
         torch.set_grad_enabled(False)
 
         # Prepare model for inference
         model = model.cuda().eval()
-        model.tokenizer = processor
+        model.tokenizer = handler
 
         # Generate model output using CUDA
         try:
             with torch.autocast(device_type='cuda', dtype=torch.float16):
                 gen_text, _ = model.chat(
-                    processor,
+                    handler,
                     prompt,
                     processed_image_paths,
                     do_sample=False,
                     num_beams=3,
-                    top_p=1,
+                    top_p=1,  # Unset top_p, to avoid a UserWarning - conflict between do_sample and top_p
                     history=history,
                     use_meta=True
                 )

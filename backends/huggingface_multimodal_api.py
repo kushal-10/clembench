@@ -196,16 +196,16 @@ class HuggingfaceMultimodalModel(backends.Model):
         if has_multiple_images and not self.supports_multiple_images:
             raise ValueError(f"Multiple images not supported in a single turn for model {self.model_name}")
 
-        kwargs = {"template": self.chat_template, "max_tokens": self.get_max_tokens(), "device": self.device,
-                  "split_prefix": self.split_prefix, "cull": self.eos_to_cull}
+        model_kwargs = {"template": self.chat_template, "max_tokens": self.get_max_tokens(), "device": self.device,
+                        "split_prefix": self.split_prefix, "cull": self.eos_to_cull}
 
-        outs = self.model_class.prepare_inputs(messages=messages, **kwargs)
+        inputs = self.model_class.prepare_inputs(messages=messages, **model_kwargs)
 
-        prompt_text, image, additions = outs['prompt'], outs['image'], outs['kwargs']
+        prompt_text, image, processor_kwargs = inputs['prompt'], inputs['image'], inputs['kwargs']
 
         print(f"\n\n ################## Check Input Prompt Text in BACKEND: ################## \n{prompt_text} \n\n")
 
-        prompt_tokens = self.model_class.get_tokens(prompt=prompt_text, handler=self.input_handler, **additions)
+        prompt_tokens = self.model_class.get_tokens(prompt=prompt_text, handler=self.input_handler, **processor_kwargs)
 
         # Check context limit
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
@@ -218,8 +218,8 @@ class HuggingfaceMultimodalModel(backends.Model):
                                                 context_size=context_check[3])
 
         prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
-        print(f"Check image {image}")
-        response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=image, model=self.multimodal_model, processor=self.input_handler, **additions)
+
+        response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=image, model=self.multimodal_model, handler=self.input_handler, **processor_kwargs)
 
         print(f"\n\n################## Check Response Text in BACKEND: ################## \n{response_text} \n\n")
 

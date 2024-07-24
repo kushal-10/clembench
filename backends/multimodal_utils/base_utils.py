@@ -3,7 +3,7 @@ from typing import Any, Dict, Tuple, List
 
 class BaseMLLM(ABC):
     """
-    Abstract base class for Multimodal-Large-Language Models (MLLMs).
+    Abstract base class for Multimodal Large Language Models (MLLMs).
 
     This class defines the interface for preparing inputs and generating outputs
     for multimodal models. Any concrete implementation of this class must
