@@ -63,8 +63,9 @@ class InternMLLM(BaseMLLM):
         :param kwargs: Additional keyword arguments that may be used in the process.
         :return: A dictionary containing:
                  - 'prompt': The final prompt to be used by the model.
-                 - 'image': A list of image URLs to be processed.
-                 - 'kwargs': A dictionary with 'history' (list of user-assistant message pairs).
+                 - 'images': A list of image URLs to be processed.
+                 - 'processor_kwargs': A dictionary with 'history' (list of user-assistant message pairs). Passed to
+                                       generate_outputs and get_tokens
         """
         conversation_history = []
         images = []
@@ -95,8 +96,8 @@ class InternMLLM(BaseMLLM):
 
         return {
             "prompt": previous_user_message,
-            "image": images,
-            "kwargs": {"history": conversation_history}
+            "images": images,
+            "processor_kwargs": {"history": conversation_history}
         }
 
     @staticmethod

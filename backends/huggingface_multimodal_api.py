@@ -201,7 +201,7 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         inputs = self.model_class.prepare_inputs(messages=messages, **model_kwargs)
 
-        prompt_text, image, processor_kwargs = inputs['prompt'], inputs['image'], inputs['kwargs']
+        prompt_text, images, processor_kwargs = inputs['prompt'], inputs['images'], inputs['processor_kwargs']
 
         print(f"\n\n ################## Check Input Prompt Text in BACKEND: ################## \n{prompt_text} \n\n")
 
@@ -219,7 +219,7 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
 
-        response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=image, model=self.multimodal_model, handler=self.input_handler, **processor_kwargs)
+        response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=images, model=self.multimodal_model, handler=self.input_handler, **processor_kwargs)
 
         print(f"\n\n################## Check Response Text in BACKEND: ################## \n{response_text} \n\n")
 
