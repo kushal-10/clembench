@@ -174,8 +174,8 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.model_class = getattr(module, class_name)()
 
         # Load model specific instance variables
-        self.template = getattr(model_spec, 'custom_chat_template', None)
-        self.cull = getattr(model_spec, 'eos_to_cull', None)
+        self.chat_template = getattr(model_spec, 'custom_chat_template', None)
+        self.eos_to_cull = getattr(model_spec, 'eos_to_cull', None)
         self.supports_multiple_images = getattr(model_spec, 'supports_multiple_images', False)
 
     def generate_response(self, messages: List[Dict]) -> Tuple[Any, Any, str]:
@@ -196,15 +196,14 @@ class HuggingfaceMultimodalModel(backends.Model):
         if has_multiple_images and not self.supports_multiple_images:
             raise ValueError(f"Multiple images not supported in a single turn for model {self.model_name}")
 
-        
-        # self.model_class = self.model_class()
+        kwargs = {"template": self.chat_template, "max_tokens": self.get_max_tokens(), "device": self.device,
+                  "split_prefix": self.split_prefix, "cull": self.eos_to_cull}
 
-        kwargs = {"template": self.template, "max_tokens": self.get_max_tokens(), "device": self.device,
-                  "split_prefix": self.split_prefix, "cull": self.cull}
         outs = self.model_class.prepare_inputs(messages=messages, **kwargs)
+
         prompt_text, image, additions = outs['prompt'], outs['image'], outs['kwargs']
 
-        print(f"Check Input Text IN BACKEND: ################## \n{prompt_text} \n\n")
+        print(f"\n\n ################## Check Input Prompt Text in BACKEND: ################## \n{prompt_text} \n\n")
 
         prompt_tokens = self.model_class.get_tokens(prompt=prompt_text, processor=self.processor, **additions)
 
@@ -222,6 +221,6 @@ class HuggingfaceMultimodalModel(backends.Model):
         print(f"Check image {image}")
         response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=image, model=self.multimodal_model, processor=self.processor, **additions)
 
-        print(f"Check Response Text in BACKEND: ################## \n{response_text} \n\n")
+        print(f"\n\n################## Check Response Text in BACKEND: ################## \n{response_text} \n\n")
 
         return prompt, response, response_text

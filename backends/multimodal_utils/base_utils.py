@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, List
 
 class BaseMLLM(ABC):
     """
@@ -26,6 +26,19 @@ class BaseMLLM(ABC):
         :param kwargs: Keyword arguments required for preparing inputs, which may include additional data.
 
         :return: A dictionary containing the prepared inputs for the model.
+        """
+        pass
+
+    @abstractmethod
+    def get_tokens(self, prompt: str, tokenizer: Any, **kwargs: Any) -> List[str]:
+        """
+        Generate tokens for the given prompt and conversation history.
+
+        :param prompt: The current prompt to be tokenized.
+        :param tokenizer: The tokenizer used for tokenizing the prompt and history.
+        :param kwargs: Additional keyword arguments, expecting 'history' which is a list of tuples (user message, assistant response).
+
+        :return: A list of tokens generated from the combined prompt and conversation history.
         """
         pass
 
