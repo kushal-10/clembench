@@ -97,7 +97,7 @@ class InternMLLM(BaseMLLM):
         return {
             "prompt": previous_user_message,
             "images": images,
-            "processor_kwargs": {"history": conversation_history}
+            "processor_kwargs": {"history": conversation_history, "device": kwargs.get('device')}
         }
 
     @staticmethod
@@ -169,7 +169,7 @@ class InternMLLM(BaseMLLM):
         return processed_image_paths
 
     def generate_outputs(self, prompt: str, images: List[str], model: AutoModel,
-                         handler: AutoTokenizer, **kwargs) -> Tuple[Dict[str, Any], str]:
+                         handler: AutoTokenizer, **output_kwargs) -> Tuple[Dict[str, Any], str]:
         """
         Generate model outputs given a prompt, images, and additional parameters.
 
@@ -188,28 +188,29 @@ class InternMLLM(BaseMLLM):
         processed_image_paths = self.preprocess_image(images)
 
         # Retrieve conversation history from kwargs
-        history = kwargs.get("history")
+        history = output_kwargs.get("history")
+        device = output_kwargs.get("device")
 
         # Disable gradient calculation for inference
         torch.set_grad_enabled(False)
 
         # Prepare model for inference
-        model = model.cuda().eval()
+        model = model.to(device).eval()
         model.tokenizer = handler
 
         # Generate model output using CUDA
         try:
-            with torch.autocast(device_type='cuda', dtype=torch.float16):
-                gen_text, _ = model.chat(
-                    handler,
-                    prompt,
-                    processed_image_paths,
-                    do_sample=False,
-                    num_beams=3,
-                    top_p=1,  # Unset top_p, to avoid a UserWarning - conflict between do_sample and top_p
-                    history=history,
-                    use_meta=True
-                )
+            # with torch.autocast(device_type='cuda', dtype=torch.float16):
+            gen_text, _ = model.chat(
+                handler,
+                prompt,
+                processed_image_paths,
+                do_sample=False,
+                num_beams=3,
+                top_p=1,  # Unset top_p, to avoid a UserWarning - conflict between do_sample and top_p
+                history=history,
+                use_meta=True
+            )
 
             # Process and clean response text
             response_text = gen_text.strip()
