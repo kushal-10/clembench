@@ -198,7 +198,6 @@ class InternMLLM(BaseMLLM):
         model = model.to(device).eval()
         model.tokenizer = handler
 
-        # Generate model output using CUDA
         try:
             with torch.autocast(device_type=device, dtype=torch.float16):
                 gen_text, _ = model.chat(

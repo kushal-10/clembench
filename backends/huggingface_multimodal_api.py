@@ -1,6 +1,5 @@
 """
 Backend for open-weight multimodal models.
-
 """
 from typing import List, Dict, Tuple, Any
 import torch
@@ -205,8 +204,6 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         prompt_text, images, output_kwargs = inputs['prompt'], inputs['images'], inputs['output_kwargs']
 
-        print(f"\n\n ################## Check Input Prompt Text in BACKEND: ################## \n{prompt_text} \n\n")
-
         prompt_tokens = self.model_class.get_tokens(prompt=prompt_text, handler=self.input_handler, **output_kwargs)
 
         # Check context limit
@@ -224,7 +221,5 @@ class HuggingfaceMultimodalModel(backends.Model):
         response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=images,
                                                                     model=self.multimodal_model,
                                                                     handler=self.input_handler, **output_kwargs)
-
-        print(f"\n\n################## Check Response Text in BACKEND: ################## \n{response_text} \n\n")
 
         return prompt, response, response_text
