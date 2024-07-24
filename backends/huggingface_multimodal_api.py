@@ -57,22 +57,29 @@ def check_context_limit(context_size: int, prompt_tokens: list, max_new_tokens: 
 
 
 # MODEL UTILS
-def load_processor(model_spec: backends.ModelSpec):
+def load_processor_or_tokenizer(model_spec: backends.ModelSpec):
     """
-    Load processor/tokenizer from AutoProcessor/AutoTokenizer for a specific model (Example - LlavaProcessor).
+    Load processor/tokenizer from AutoProcessor/AutoTokenizer for a specific model (Example - LlavaProcessor/InternLM2Tokenizer).
+    Some models use AutoTokenizer and handle image processing separately (InternLM, for example)
 
-    :param model_spec: A dictionary that defines the model to be used, loaded from Model Registry.
-    :return processor: Processor for the specific model.
+    :param model_spec: Contains definitions the model to be used, loaded from Model Registry.
+    :return input_handler: Processor/Tokenizer for the specific model.
     """
     hf_model_str = model_spec['huggingface_id']  # Get the model name
 
-    use_fast = not getattr(model_spec, 'not_fast', False)
+    """
+    Change use_fast
+    tokenizer -> use_tokenizer key in model registry
+    Handle processor/tokenizer separately
+    """
+
+    use_fast = getattr(model_spec, 'use_fast', True)  # Default is True, set to False for Llava 34B via Model Registry
     use_tokenizer = getattr(model_spec, 'tokenizer', False)
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
     not_distributed = getattr(model_spec, 'not_distributed', False)
-    processor_class = AutoTokenizer if use_tokenizer else AutoProcessor
+    input_handler_class = AutoTokenizer if use_tokenizer else AutoProcessor
 
-    processor = processor_class.from_pretrained(
+    input_handler = input_handler_class.from_pretrained(
         hf_model_str,
         use_fast=use_fast,
         device_map=None if not_distributed else "auto",
@@ -80,8 +87,8 @@ def load_processor(model_spec: backends.ModelSpec):
         trust_remote_code=trust_remote_code
     )
 
-    logger.info(f'Loading {processor_class} for model : {model_spec.model_name}')
-    return processor
+    logger.info(f'Loading {input_handler_class} for model : {model_spec.model_name}')
+    return input_handler
 
 
 # MODEL UTILS
@@ -95,8 +102,8 @@ def load_model(model_spec: backends.ModelSpec):
     logger.info(f'Start loading huggingface model weights: {model_spec.model_name}')
     hf_model_str = model_spec['huggingface_id']  # Get the model name
 
-    model_type = model_spec['model_type']  # Use the appropriate Auto class to load the model
-    module_path, class_name = model_type.rsplit('.', 1)
+    model_type_str = model_spec['automodel_type']  # Load the appropriate Auto class string to load the model
+    module_path, class_name = model_type_str.rsplit('.', 1)
     module = importlib.import_module(module_path)
     model_type = getattr(module, class_name)
 
@@ -119,6 +126,7 @@ def load_model(model_spec: backends.ModelSpec):
     logger.info(f"Finished loading huggingface model: {model_spec.model_name}")
 
     # Log the device map if it's available
+    # Some models do not support distributed inference, hence do not have device map arg in the model loader
     device_map = getattr(model, 'hf_device_map', None)
     if device_map:
         logger.info(f"Device Map: {device_map}")
@@ -127,9 +135,9 @@ def load_model(model_spec: backends.ModelSpec):
 
 
 # BACKEND UTILS
-def check_multiple_image(messages: List[Dict]) -> bool:
+def check_multiple_images(messages: List[Dict]) -> bool:
     """
-    Return True if a single message contains multiple images.
+    Return True if any single message in messages contains multiple images.
 
     :param messages: A list[Dict] type object passed to the backend containing 'role', 'content', and 'image'.
     :return: True if any message contains multiple images, otherwise False.
@@ -152,23 +160,23 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         # Load instance variable used for evey model
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model_type = model_spec['model_type']
+        # self.model_type = model_spec['automodel_type']
         self.model_name = model_spec['model_name']
-        self.response_type = model_spec['response_type']  # Use the appropriate Auto class to load the model
-        module_path, class_name = self.response_type.rsplit('.', 1)
-        module = importlib.import_module(module_path)
-        self.response_type = getattr(module, class_name)
-        self.processor = load_processor(model_spec)
+        self.processor = load_processor_or_tokenizer(model_spec)
         self.multimodal_model = load_model(model_spec)
         self.split_prefix = model_spec['output_split_prefix']
         self.context_size = get_context_limit(model_spec)
 
-        # Type cast model_spec to a Dictionary, for cleaner loading of variables
-        model_spec_dict = vars(model_spec)
+        # Use the appropriate custom MLLM class to process inputs and generate outputs
+        model_class_str = model_spec['model_class']
+        module_path, class_name = model_class_str.rsplit('.', 1)
+        module = importlib.import_module(module_path)
+        self.model_class = getattr(module, class_name)()
+
         # Load model specific instance variables
-        self.template = model_spec_dict.get('custom_chat_template', None)
-        self.cull = model_spec_dict.get('eos_to_cull', None)
-        self.supports_multiple_images = model_spec_dict.get('supports_multiple_images', False)
+        self.template = getattr(model_spec, 'custom_chat_template', None)
+        self.cull = getattr(model_spec, 'eos_to_cull', None)
+        self.supports_multiple_images = getattr(model_spec, 'supports_multiple_images', False)
 
     def generate_response(self, messages: List[Dict]) -> Tuple[Any, Any, str]:
         """
@@ -184,22 +192,21 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         # Check to see if game passes multiple images in a single turn
         # Proceed only if model supports multiple images, else return blanks for prompt, response and response_text
-        has_multiple_images = check_multiple_image(messages=messages)
+        has_multiple_images = check_multiple_images(messages=messages)
         if has_multiple_images and not self.supports_multiple_images:
-            print(f"Multiple images not supported in a single turn for model {self.model_name}")
-            return "", {"response": ""}, ""
+            raise ValueError(f"Multiple images not supported in a single turn for model {self.model_name}")
 
-        model_response = self.response_type
-        model_response = model_response()
+        
+        # self.model_class = self.model_class()
 
         kwargs = {"template": self.template, "max_tokens": self.get_max_tokens(), "device": self.device,
                   "split_prefix": self.split_prefix, "cull": self.cull}
-        outs = model_response.prepare_inputs(messages=messages, **kwargs)
+        outs = self.model_class.prepare_inputs(messages=messages, **kwargs)
         prompt_text, image, additions = outs['prompt'], outs['image'], outs['kwargs']
 
         print(f"Check Input Text IN BACKEND: ################## \n{prompt_text} \n\n")
 
-        prompt_tokens = model_response.get_tokens(prompt=prompt_text, processor=self.processor, **additions)
+        prompt_tokens = self.model_class.get_tokens(prompt=prompt_text, processor=self.processor, **additions)
 
         # Check context limit
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
@@ -213,7 +220,7 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
         print(f"Check image {image}")
-        response, response_text = model_response.generate_outputs(prompt=prompt_text, images=image, model=self.multimodal_model, processor=self.processor, **additions)
+        response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=image, model=self.multimodal_model, processor=self.processor, **additions)
 
         print(f"Check Response Text in BACKEND: ################## \n{response_text} \n\n")
 

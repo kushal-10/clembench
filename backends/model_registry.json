@@ -782,7 +782,7 @@
     "huggingface_id": "llava-hf/llava-v1.6-34b-hf",
     "model_type": "Vision2Seq",
     "output_split_prefix": "assistant",
-    "not_fast": true,
+    "use_fast": false,
     "custom_chat_template": "<|im_start|>system\nAnswer the questions.<|im_end|>{%- for message in messages -%}{% if message['role'] == 'user' %}{% if message['image']%}<|im_start|>user\n<image>\n{{message['content']}}<|im_end|>{% else %}<|im_start|>\nuser\n{{message['content']}}<|im_end|>{% endif %}{% elif message['role'] == 'assistant' %}<|im_start|>assistant\n{{message['content']}}<|im_end|>{% endif %}{% endfor %}<|im_start|>assistant\n"
   },
   {
@@ -831,8 +831,8 @@
     "model_name": "internlm-xcomposer2d5-7b",
     "backend": "huggingface_multimodal",
     "huggingface_id": "internlm/internlm-xcomposer2d5-7b",
-    "model_type": "transformers.AutoModel",
-    "response_type": "backends.multimodal_utils.intern_utils.InternMLLM",
+    "automodel_type": "transformers.AutoModel",
+    "model_class": "backends.multimodal_utils.intern_utils.InternMLLM",
     "tokenizer": true,
     "supports_multiple_images": true,
     "trust_remote_code": true,
