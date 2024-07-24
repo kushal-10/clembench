@@ -9,17 +9,17 @@ from transformers import (AutoProcessor, AutoModelForVision2Seq, IdeficsForVisio
 
 import backends
 from backends.multimodal_utils.intern_utils import InternMLLM
-
-# CONSTANTS
-MODEL_LOADER_MAP = {
-    "Idefics": IdeficsForVisionText2Text,
-    "Vision2Seq": AutoModelForVision2Seq,
-    "Intern": AutoModel
-}
-
-RESPONSE_MAP = {
-    "Intern": InternMLLM
-}
+#
+# # CONSTANTS
+# MODEL_LOADER_MAP = {
+#     "Idefics": IdeficsForVisionText2Text,
+#     "Vision2Seq": AutoModelForVision2Seq,
+#     "Intern": AutoModel
+# }
+#
+# RESPONSE_MAP = {
+#     "Intern": InternMLLM
+# }
 
 FALLBACK_CONTEXT_SIZE = 256
 logger = backends.get_logger(__name__)
@@ -108,8 +108,7 @@ def load_model(model_spec: backends.ModelSpec):
     logger.info(f'Start loading huggingface model weights: {model_spec.model_name}')
     hf_model_str = model_spec['huggingface_id']  # Get the model name
 
-    model_type = MODEL_LOADER_MAP[model_spec['model_type']]  # Use the appropriate Auto class to load the model
-
+    model_type = model_spec['model_type']  # Use the appropriate Auto class to load the model
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
     use_bf16 = getattr(model_spec, 'use_bf16', False)
     not_distributed = getattr(model_spec, 'not_distributed', False)
@@ -164,6 +163,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model_type = model_spec['model_type']
         self.model_name = model_spec['model_name']
+        self.response_type = model_spec['response_type']
         self.processor = load_processor(model_spec)
         self.multimodal_model = load_model(model_spec)
         self.split_prefix = model_spec['output_split_prefix']
@@ -195,7 +195,7 @@ class HuggingfaceMultimodalModel(backends.Model):
             print(f"Multiple images not supported in a single turn for model {self.model_name}")
             return "", {"response": ""}, ""
 
-        model_response = RESPONSE_MAP[self.model_type]
+        model_response = self.response_type
         model_response = model_response()
 
         kwargs = {"template": self.template, "max_tokens": self.get_max_tokens(), "device": self.device,
