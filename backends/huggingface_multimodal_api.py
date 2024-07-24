@@ -4,16 +4,13 @@ Backend for open-weight multimodal models.
 """
 from typing import List, Dict, Tuple, Any
 import torch
-from transformers import (AutoProcessor, AutoModelForVision2Seq, IdeficsForVisionText2Text,
-                          AutoConfig, AutoModel, AutoTokenizer)
+from transformers import (AutoProcessor, AutoConfig, AutoTokenizer)
 import importlib
 
 import backends
-from backends.multimodal_utils.intern_utils import InternMLLM
 
 FALLBACK_CONTEXT_SIZE = 256
 logger = backends.get_logger(__name__)
-
 
 # CONTEXT UTILS
 def get_context_limit(model_spec: backends.ModelSpec) -> int:
