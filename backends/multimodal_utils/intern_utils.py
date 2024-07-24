@@ -100,12 +100,12 @@ class InternMLLM(BaseMLLM):
         }
 
     @staticmethod
-    def get_tokens(prompt: str, tokenizer: AutoTokenizer, **kwargs) -> List[str]:
+    def get_tokens(prompt: str, handler: AutoTokenizer, **kwargs) -> List[str]:
         """
         Generate tokens for the given prompt and conversation history.
 
         :param prompt: The current prompt to be tokenized.
-        :param tokenizer: The tokenizer used for tokenizing the prompt and history.
+        :param handler: The tokenizer used for tokenizing the prompt and history.
         :param kwargs: Additional keyword arguments, expecting 'history' which is a list of tuples (user message, assistant response).
 
         :return: A list of tokens generated from the combined prompt and conversation history.
@@ -120,7 +120,7 @@ class InternMLLM(BaseMLLM):
         combined_text = prompt + "".join([user_msg + assistant_response for user_msg, assistant_response in history])
 
         # Tokenize the combined text
-        tokens = tokenizer.tokenize(combined_text)
+        tokens = handler.tokenize(combined_text)
 
         return tokens
 

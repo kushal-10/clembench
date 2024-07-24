@@ -162,7 +162,7 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         # self.model_type = model_spec['automodel_type']
         self.model_name = model_spec['model_name']
-        self.processor = load_processor_or_tokenizer(model_spec)
+        self.input_handler = load_processor_or_tokenizer(model_spec)
         self.multimodal_model = load_model(model_spec)
         self.split_prefix = model_spec['output_split_prefix']
         self.context_size = get_context_limit(model_spec)
@@ -205,7 +205,7 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         print(f"\n\n ################## Check Input Prompt Text in BACKEND: ################## \n{prompt_text} \n\n")
 
-        prompt_tokens = self.model_class.get_tokens(prompt=prompt_text, processor=self.processor, **additions)
+        prompt_tokens = self.model_class.get_tokens(prompt=prompt_text, handler=self.input_handler, **additions)
 
         # Check context limit
         context_check = check_context_limit(self.context_size, prompt_tokens, max_new_tokens=self.get_max_tokens())
@@ -219,7 +219,7 @@ class HuggingfaceMultimodalModel(backends.Model):
 
         prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
         print(f"Check image {image}")
-        response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=image, model=self.multimodal_model, processor=self.processor, **additions)
+        response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=image, model=self.multimodal_model, processor=self.input_handler, **additions)
 
         print(f"\n\n################## Check Response Text in BACKEND: ################## \n{response_text} \n\n")
 

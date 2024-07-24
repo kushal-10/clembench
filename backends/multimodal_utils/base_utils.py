@@ -30,12 +30,12 @@ class BaseMLLM(ABC):
         pass
 
     @abstractmethod
-    def get_tokens(self, prompt: str, tokenizer: Any, **kwargs: Any) -> List[str]:
+    def get_tokens(self, prompt: str, handler: Any, **kwargs: Any) -> List[str]:
         """
         Generate tokens for the given prompt and conversation history.
 
         :param prompt: The current prompt to be tokenized.
-        :param tokenizer: The tokenizer used for tokenizing the prompt and history.
+        :param handler: The processor/tokenizer used for tokenizing the prompt and history.
         :param kwargs: Additional keyword arguments, expecting 'history' which is a list of tuples (user message, assistant response).
 
         :return: A list of tokens generated from the combined prompt and conversation history.
