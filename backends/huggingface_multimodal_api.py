@@ -167,10 +167,6 @@ class HuggingfaceMultimodalModel(backends.Model):
         self.split_prefix = model_spec['output_split_prefix']
         self.context_size = get_context_limit(model_spec)
 
-        print(self.multimodal_model)
-        print(getattr(self.multimodal_model, 'dtype', None))
-        print(getattr(self.multimodal_model, 'torch_dtype', None))
-
         # Use the appropriate custom MLLM class to process inputs and generate outputs
         model_class_str = model_spec['model_class']
         module_path, class_name = model_class_str.rsplit('.', 1)
@@ -201,7 +197,7 @@ class HuggingfaceMultimodalModel(backends.Model):
             raise ValueError(f"Multiple images not supported in a single turn for model {self.model_name}")
 
         model_kwargs = {"template": self.chat_template, "max_tokens": self.get_max_tokens(), "device": self.device,
-                        "split_prefix": self.split_prefix, "cull": self.eos_to_cull, "dtype": self.multimodal_model['']}
+                        "split_prefix": self.split_prefix, "cull": self.eos_to_cull}
 
         inputs = self.model_class.prepare_inputs(messages=messages, **model_kwargs)
 

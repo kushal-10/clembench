@@ -200,7 +200,7 @@ class InternMLLM(BaseMLLM):
 
         # Generate model output using CUDA
         try:
-            with torch.autocast(device_type=device, dtype="auto"):
+            with torch.autocast(device_type=device, dtype=torch.float16):
                 gen_text, _ = model.chat(
                     handler,
                     prompt,

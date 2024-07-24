@@ -836,7 +836,7 @@
     "tokenizer": true,
     "supports_multiple_images": true,
     "trust_remote_code": true,
-    "use_bf16": false,
+    "use_bf16": true,
     "output_split_prefix": "",
     "not_distributed": true
   }
