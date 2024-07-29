@@ -3,7 +3,7 @@ Backend for open-weight multimodal models.
 """
 from typing import List, Dict, Tuple, Any
 import torch
-from transformers import (AutoProcessor, AutoConfig, AutoTokenizer)
+from transformers import AutoProcessor, AutoConfig, AutoTokenizer
 import importlib
 
 import backends
