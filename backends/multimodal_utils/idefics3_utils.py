@@ -72,11 +72,11 @@ image1 = image_links[0]
 image2 = image_links[1]
 
 prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
-inputs = processor(text=prompt, images=[[image1]], padding=True, return_tensors="pt")
-# for i in inputs:
-#     print(len(i))
-
-inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+inputs = processor(text=prompt, images=[image1], padding=True, return_tensors="pt").to(DEVICE)
+# # for i in inputs:
+# #     print(len(i))
+#
+# inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
 
 
 # Generate
