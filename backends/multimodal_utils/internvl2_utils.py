@@ -111,14 +111,13 @@ def split_model(model_name):
 # If you set `load_in_8bit=False`, you will need at least three 80GB GPUs.
 # path = 'OpenGVLab/InternVL2-Llama3-76B'
 path = 'OpenGVLab/InternVL2-1B'
-device_map = split_model('OpenGVLab/InternVL2-1B')
+# device_map = split_model('OpenGVLab/InternVL2-1B')
 model = AutoModel.from_pretrained(
     path,
     torch_dtype=torch.bfloat16,
     # load_in_8bit=True,
     low_cpu_mem_usage=True,
-    trust_remote_code=True,
-    device_map=device_map).eval()
+    trust_remote_code=True).eval()
 tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True, use_fast=False)
 
 # set the max number of tiles in `max_num`
