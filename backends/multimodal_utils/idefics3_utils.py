@@ -13,7 +13,7 @@ image1 = load_image("https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-
 image2 = load_image("https://cdn.britannica.com/59/94459-050-DBA42467/Skyline-Chicago.jpg")
 image3 = load_image("https://cdn.britannica.com/68/170868-050-8DDE8263/Golden-Gate-Bridge-San-Francisco.jpg")
 
-processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b", padding=True)
+processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b")
 model = AutoModelForVision2Seq.from_pretrained(
     "HuggingFaceM4/idefics2-8b",
 ).to(DEVICE)
@@ -41,7 +41,7 @@ messages = [
         ]
     },
 ]
-prompt = processor.apply_chat_template(messages, add_generation_prompt=True, padding=True)
+prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
 inputs = processor(text=prompt, images=[image1, image2], padding=True, return_tensors="pt")
 inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
 
