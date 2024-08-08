@@ -13,7 +13,7 @@ image1 = load_image("https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-
 image2 = load_image("https://cdn.britannica.com/59/94459-050-DBA42467/Skyline-Chicago.jpg")
 image3 = load_image("https://cdn.britannica.com/68/170868-050-8DDE8263/Golden-Gate-Bridge-San-Francisco.jpg")
 
-processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b")
+processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b", padding=True)
 model = AutoModelForVision2Seq.from_pretrained(
     "HuggingFaceM4/idefics2-8b",
 ).to(DEVICE)
