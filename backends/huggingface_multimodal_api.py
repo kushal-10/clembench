@@ -67,14 +67,8 @@ def load_processor_or_tokenizer(model_spec: backends.ModelSpec):
     """
     hf_model_str = model_spec['huggingface_id']  # Get the model name
 
-    """
-    Change use_fast
-    tokenizer -> use_tokenizer key in model registry
-    Handle processor/tokenizer separately
-    """
-
     use_fast = getattr(model_spec, 'use_fast', True)  # Default is True, set to False for Llava 34B via Model Registry
-    use_tokenizer = getattr(model_spec, 'tokenizer', False)
+    use_tokenizer = getattr(model_spec, 'use_tokenizer', False)
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
     not_distributed = getattr(model_spec, 'not_distributed', False)
     input_handler_class = AutoTokenizer if use_tokenizer else AutoProcessor

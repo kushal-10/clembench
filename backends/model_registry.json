@@ -1270,5 +1270,44 @@
     "release_date": "24-07-23",
     "open_weight": true,
     "parameters": "9B"
+  },
+  {
+    "model_name": "internlm-xcomposer2d5-7b",
+    "backend": "huggingface_multimodal",
+    "huggingface_id": "internlm/internlm-xcomposer2d5-7b",
+    "automodel_type": "transformers.AutoModel",
+    "model_class": "backends.multimodal_utils.intern_utils.InternMLLM",
+    "use_tokenizer": true,
+    "supports_multiple_images": true,
+    "trust_remote_code": true,
+    "use_bf16": true,
+    "output_split_prefix": "",
+    "not_distributed": true
+  },
+  {
+    "model_name": "Idefics3-8B-Llama3",
+    "backend": "huggingface_multimodal",
+    "huggingface_id": "HuggingFaceM4/Idefics3-8B-Llama3",
+    "automodel_type": "transformers.AutoModelForVision2Seq",
+    "model_class": "backends.multimodal_utils.idefics3_utils.Idefics3MLLM"
+    "eos_to_cull": "",
+    "output_split_prefix": "",
+    "supports_multiple_images": true,
+    "release_date": "05-08-24",
+    "open_weight": true,
+    "parameters": "8B"
+  },
+  {
+    "model_name": "idefics2-8b-chatty",
+    "backend": "huggingface_multimodal",
+    "huggingface_id": "HuggingFaceM4/idefics2-8b-chatty",
+    "automodel_type": "transformers.AutoModelForVision2Seq",
+    "model_class": "backends.multimodal_utils.idefics3_utils.Idefics3MLLM"
+    "eos_to_cull": "",
+    "output_split_prefix": "",
+    "supports_multiple_images": true,
+    "release_date": "02-05-24",
+    "open_weight": true,
+    "parameters": "8B"
   }
 ]

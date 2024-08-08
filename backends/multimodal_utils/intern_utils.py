@@ -1,4 +1,4 @@
-# Individual inference methods for InternLM X-Composer 2.5 7B
+# Inference class for InternLM X-Composer 2.5 7B
 
 import os
 import shutil
