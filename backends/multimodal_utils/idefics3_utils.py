@@ -41,8 +41,8 @@ messages = [
         ]
     },
 ]
-prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
-inputs = processor(text=prompt, images=[image1, image2], return_tensors="pt")
+prompt = processor.apply_chat_template(messages, add_generation_prompt=True, padding=True)
+inputs = processor(text=prompt, images=[image1, image2], padding=True, return_tensors="pt")
 inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
 
 
