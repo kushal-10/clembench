@@ -72,7 +72,7 @@ image1 = image_links[0]
 image2 = image_links[1]
 
 prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
-inputs = processor(text=prompt, images=[image1], padding=True, return_tensors="pt").to(DEVICE)
+inputs = processor(text=prompt, images=[image1], padding=True, return_tensors="pt").to(DEVICE, torch.float16)
 # # for i in inputs:
 # #     print(len(i))
 #
