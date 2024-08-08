@@ -1,5 +1,3 @@
-# Inference class for Idefics 2 and 3
-
 import requests
 import torch
 from PIL import Image
@@ -15,9 +13,9 @@ image1 = load_image("https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-
 image2 = load_image("https://cdn.britannica.com/59/94459-050-DBA42467/Skyline-Chicago.jpg")
 image3 = load_image("https://cdn.britannica.com/68/170868-050-8DDE8263/Golden-Gate-Bridge-San-Francisco.jpg")
 
-processor = AutoProcessor.from_pretrained("HuggingFaceM4/Idefics3-8B-Llama3")
+processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b")
 model = AutoModelForVision2Seq.from_pretrained(
-    "HuggingFaceM4/Idefics3-8B-Llama3",
+    "HuggingFaceM4/idefics2-8b",
 ).to(DEVICE)
 
 # Create inputs
@@ -53,3 +51,4 @@ generated_ids = model.generate(**inputs, max_new_tokens=500)
 generated_texts = processor.batch_decode(generated_ids, skip_special_tokens=True)
 
 print(generated_texts)
+# ['User: What do we see in this image? \nAssistant: In this image, we can see the city of New York, and more specifically the Statue of Liberty. \nUser: And how about this image? \nAssistant: In this image we can see buildings, trees, lights, water and sky.']
