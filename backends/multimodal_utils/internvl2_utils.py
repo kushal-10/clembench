@@ -119,7 +119,11 @@ tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True, use_fast
 pixel_values = load_image('games/multimodal_referencegame/resources/docci_images/1.jpg', max_num=12).to(torch.bfloat16).cuda()
 generation_config = dict(max_new_tokens=1024, do_sample=False)
 
-# pure-text conversation (纯文本对话)
-question = 'Hello, who are you?'
-response, history = model.chat(tokenizer, None, question, generation_config, history=None, return_history=True)
+# single-image multi-round conversation (单图多轮对话)
+question = '<image>\nPlease describe the image in detail.'
+response, history = model.chat(tokenizer, pixel_values, question, generation_config, history=None, return_history=True)
+print(f'User: {question}\nAssistant: {response}')
+
+question = 'Please write a poem according to the image.'
+response, history = model.chat(tokenizer, pixel_values, question, generation_config, history=history, return_history=True)
 print(f'User: {question}\nAssistant: {response}')
