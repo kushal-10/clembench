@@ -5,11 +5,6 @@ from PIL import Image
 from torchvision.transforms.functional import InterpolationMode
 from transformers import AutoModel, AutoTokenizer
 
-import warnings
-warnings.filterwarnings("ignore", message="Flash Attention is not available, use_flash_attn is set to False.")
-warnings.simplefilter(action='ignore', category=FutureWarning)
-warnings.filterwarnings("ignore")
-
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
 
@@ -121,16 +116,17 @@ model = AutoModel.from_pretrained(
     load_in_8bit=False,
     low_cpu_mem_usage=True,
     trust_remote_code=True,
-    device_map=device_map).eval()
+    device_map='cpu').eval()
 tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True, use_fast=False)
 
+device = 'cpu'
 # set the max number of tiles in `max_num`
-pixel_values = load_image('games/multimodal_referencegame/resources/docci_images/1.jpg', max_num=12).to(torch.bfloat16).cuda()
+pixel_values = load_image('games/multimodal_referencegame/resources/docci_images/1.jpg', max_num=12).to(torch.bfloat16).to(device)
 generation_config = dict(max_new_tokens=1024, do_sample=False)
 
 # multi-image multi-round conversation, separate images (多图多轮对话，独立图像)
-pixel_values1 = load_image('games/multimodal_referencegame/resources/docci_images/1.jpg', max_num=12).to(torch.bfloat16).cuda()
-pixel_values2 = load_image('games/multimodal_referencegame/resources/docci_images/2.jpg', max_num=12).to(torch.bfloat16).cuda()
+pixel_values1 = load_image('games/multimodal_referencegame/resources/docci_images/1.jpg', max_num=12).to(torch.bfloat16).to(device)
+pixel_values2 = load_image('games/multimodal_referencegame/resources/docci_images/2.jpg', max_num=12).to(torch.bfloat16).to(device)
 pixel_values = torch.cat((pixel_values1, pixel_values2), dim=0)
 num_patches_list = [pixel_values1.size(0), pixel_values2.size(0)]
 
