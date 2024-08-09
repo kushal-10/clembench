@@ -105,7 +105,8 @@ def split_model(model_name):
 
     return device_map
 
-path = "OpenGVLab/InternVL2-1B"
+# path = "OpenGVLab/InternVL2-1B"
+path = "OpenGVLab/InternVL2-Llama3-76B"
 device_map = split_model('InternVL2-1B')
 model = AutoModel.from_pretrained(
     path,
