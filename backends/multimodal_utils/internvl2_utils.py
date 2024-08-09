@@ -5,9 +5,10 @@ from PIL import Image
 from torchvision.transforms.functional import InterpolationMode
 from transformers import AutoModel, AutoTokenizer
 
-import logging
-logging.getLogger().setLevel(logging.ERROR)  # Set to ERROR to ignore warnings
-
+import warnings
+warnings.filterwarnings("ignore", message="Flash Attention is not available")
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.filterwarnings("ignore")
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
