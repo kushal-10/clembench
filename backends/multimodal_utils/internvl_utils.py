@@ -6,6 +6,8 @@ import torch
 from typing import Dict, List, Tuple, Any
 import torchvision.transforms as T
 from PIL import Image
+from io import BytesIO
+import requests
 from torchvision.transforms.functional import InterpolationMode
 from transformers import AutoModel, AutoTokenizer
 
@@ -114,7 +116,10 @@ class InternvlMLLM(BaseMLLM):
         return processed_images
 
     def load_image(self, image_file, input_size=448, max_num=12):
-        image = Image.open(image_file).convert('RGB')
+        if image_file.startswith("http"):
+            image = Image.open(BytesIO(requests.get(image_file).content))
+        else:
+            image = Image.open(image_file).convert('RGB')
         transform = self.build_transform(input_size=input_size)
         images = self.dynamic_preprocess(image, image_size=input_size, use_thumbnail=True, max_num=max_num)
         pixel_values = [transform(image) for image in images]
