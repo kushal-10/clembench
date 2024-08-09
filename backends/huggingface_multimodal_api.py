@@ -220,12 +220,9 @@ class HuggingfaceMultimodalModel(backends.Model):
                                                 context_size=context_check[3])
 
         prompt = {"inputs": prompt_text, "max_new_tokens": self.get_max_tokens(), "temperature": self.get_temperature()}
-        print("\n############################################################################## PROMPT \n")
-        print(f"\n {prompt} \n")
+
         response, response_text = self.model_class.generate_outputs(prompt=prompt_text, images=images,
                                                                     model=self.multimodal_model,
                                                                     handler=self.input_handler, **output_kwargs)
-        print("\n############################################################################# RESPONSE \n")
-        print(f"\n {response} \n")
 
         return prompt, response, response_text
