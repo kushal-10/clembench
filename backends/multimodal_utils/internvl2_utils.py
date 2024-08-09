@@ -6,7 +6,7 @@ from torchvision.transforms.functional import InterpolationMode
 from transformers import AutoModel, AutoTokenizer
 
 import warnings
-warnings.filterwarnings("ignore", message="Flash Attention is not available")
+warnings.filterwarnings("ignore", message="Flash Attention is not available, use_flash_attn is set to False.")
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings("ignore")
 
