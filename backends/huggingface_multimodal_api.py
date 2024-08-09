@@ -106,7 +106,10 @@ def load_model(model_spec: backends.ModelSpec):
     custom_device_map = getattr(model_spec, 'custom_device_map', False)
     if custom_device_map:
         device_map = getattr(model_spec, 'device_map')
-        device_map = device_map(model_spec['model_name'])
+        file_path, func_name = device_map.rsplit('.', 1)
+        func_module = importlib.import_module(file_path)
+        split_model = getattr(func_module, func_name)
+        device_map = split_model(model_spec['model_name'])
     else:
         device_map = "auto"
 
