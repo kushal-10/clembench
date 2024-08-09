@@ -107,13 +107,13 @@ def split_model(model_name):
 
 # path = "OpenGVLab/InternVL2-1B"
 path = "OpenGVLab/InternVL2-Llama3-76B"
-device_map = split_model('InternVL2-1B')
+device_map = split_model('InternVL2-Llama3-76B')
 model = AutoModel.from_pretrained(
     path,
     torch_dtype=torch.bfloat16,
     low_cpu_mem_usage=True,
     trust_remote_code=True,
-    device_map="auto").eval().to("cuda")
+    device_map=device_map).eval().to("cuda")
 tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True, use_fast=False)
 
 # set the max number of tiles in `max_num`
