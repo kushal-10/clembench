@@ -2,13 +2,10 @@
 # Ref - https://huggingface.co/collections/OpenGVLab/internvl-20-667d3961ab5eb12c7ed1463e
 
 import math
-import numpy as np
 import torch
 import torchvision.transforms as T
-from decord import VideoReader, cpu
 from PIL import Image
 from torchvision.transforms.functional import InterpolationMode
-from transformers import AutoModel, AutoTokenizer
 
 from backends.multimodal_utils.base_utils import BaseMLLM
 
