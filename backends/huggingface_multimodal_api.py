@@ -103,6 +103,9 @@ def load_model(model_spec: backends.ModelSpec):
 
     trust_remote_code = getattr(model_spec, 'trust_remote_code', False)
     use_bf16 = getattr(model_spec, 'use_bf16', False)
+    load_in_8bit = getattr(model_spec, 'load_in_8bit', False)
+    low_cpu_mem_usage = getattr(model_spec, 'low_cpu_mem_usage', False)
+
     custom_device_map = getattr(model_spec, 'custom_device_map', False)
     if custom_device_map:
         device_map = getattr(model_spec, 'device_map')
@@ -117,7 +120,9 @@ def load_model(model_spec: backends.ModelSpec):
         hf_model_str,
         torch_dtype=torch.bfloat16 if use_bf16 else "auto",
         trust_remote_code=trust_remote_code,
-        device_map=device_map
+        device_map=device_map,
+        load_in_8bit=load_in_8bit,
+        low_cpu_mem_usage=low_cpu_mem_usage
     )
 
     # Set pad_token_id to eos_token_id if it's not already set
