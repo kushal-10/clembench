@@ -119,11 +119,13 @@ tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True, use_fast
 pixel_values = load_image('games/multimodal_referencegame/resources/docci_images/1.jpg', max_num=12).to(torch.bfloat16).cuda()
 generation_config = dict(max_new_tokens=1024, do_sample=False)
 
-# single-image multi-round conversation (单图多轮对话)
-question = '<image>\nPlease describe the image in detail.'
-response, history = model.chat(tokenizer, pixel_values, question, generation_config, history=None, return_history=True)
+# multi-image multi-round conversation, combined images (多图多轮对话，拼接图像)
+pixel_values1 = load_image('games/multimodal_referencegame/resources/docci_images/1.jpg', max_num=12).to(torch.bfloat16).cuda()
+pixel_values2 = load_image('games/multimodal_referencegame/resources/docci_images/2.jpg', max_num=12).to(torch.bfloat16).cuda()
+pixel_values = torch.cat((pixel_values1, pixel_values2), dim=0)
+
+question = '<image>\nDescribe the two images in detail.'
+response, history = model.chat(tokenizer, pixel_values, question, generation_config,
+                               history=None, return_history=True)
 print(f'User: {question}\nAssistant: {response}')
 
-question = 'Please write a poem according to the image.'
-response, history = model.chat(tokenizer, pixel_values, question, generation_config, history=history, return_history=True)
-print(f'User: {question}\nAssistant: {response}')
