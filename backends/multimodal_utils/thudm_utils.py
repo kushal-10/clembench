@@ -8,7 +8,7 @@ tokenizer = AutoTokenizer.from_pretrained("THUDM/glm-4v-9b", trust_remote_code=T
 
 query = '描述这张图片'
 image = Image.open("games/multimodal_referencegame/resources/clevr_images/1.jpg").convert('RGB')
-inputs = tokenizer.apply_chat_template([{"role": "user", "image": image, "content": query}],
+inputs = tokenizer.apply_chat_template([{"role": "user", "image": [image], "content": query}],
                                        add_generation_prompt=True, tokenize=True, return_tensors="pt",
                                        return_dict=True)  # chat mode
 
