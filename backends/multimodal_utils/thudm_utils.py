@@ -19,7 +19,7 @@ model = AutoModelForCausalLM.from_pretrained(
 text_only_template = "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER: {} ASSISTANT:"
 
 while True:
-    image_path = input("image path >>>>> ")
+    image_path = "games/multimodal_referencegame/resources/clevr_images/1.jpg"
     if image_path == '':
         print('You did not enter image path, the following will be a plain text conversation.')
         image = None
