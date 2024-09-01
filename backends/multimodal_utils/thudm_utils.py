@@ -19,6 +19,9 @@ model = AutoModelForCausalLM.from_pretrained(
 text_only_template = "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER: {} ASSISTANT:"
 
 image_path = "games/multimodal_referencegame/resources/clevr_images/1.jpg"
+image_path2 = "games/multimodal_referencegame/resources/clevr_images/2.jpg"
+image_path3 = "games/multimodal_referencegame/resources/clevr_images/3.jpg"
+
 if image_path == '':
     print('You did not enter image path, the following will be a plain text conversation.')
     image = None
@@ -27,9 +30,13 @@ else:
     image = Image.open(image_path).convert('RGB')
 
 history = []
-image_list = [image]
+image1 = Image.open(image_path).convert('RGB')
+image2 = Image.open(image_path2).convert('RGB')
+image3 = Image.open(image_path3).convert('RGB')
 
-query = "What is shown in this image"
+image_list = [image1, image2, image3]
+
+query = "What is shown in these three images"
 
 if image_list is None:
     if text_only_first_query:
@@ -61,7 +68,7 @@ inputs = {
     'input_ids': input_by_model['input_ids'].unsqueeze(0).to(DEVICE),
     'token_type_ids': input_by_model['token_type_ids'].unsqueeze(0).to(DEVICE),
     'attention_mask': input_by_model['attention_mask'].unsqueeze(0).to(DEVICE),
-    'images': [[input_by_model['images'][0].to(DEVICE).to(TORCH_TYPE)]] if image is not None else None,
+    'images': [[input_by_model['images'][i].to(DEVICE).to(TORCH_TYPE) for i in range(len(image_list))]] if image is not None else None,
 }
 gen_kwargs = {
     "max_new_tokens": 2048,
