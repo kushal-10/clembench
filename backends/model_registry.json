@@ -588,7 +588,6 @@
             "estimated_parameters": "1.76T"
         }
     },
-        // §§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§
     {
         "model_name": "o1-2024-12-17",
         "model_id": "o1-2024-12-17",
@@ -597,12 +596,59 @@
         "open_weight": false,
         "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "es",
+            "fr",
+            "de",
+            "it",
+            "pt",
+            "ru",
+            "zh",
+            "ja",
+            "ko",
+            "ar",
+            "hi",
+            "bn",
+            "te",
+            "ta",
+            "ml",
+            "kn",
+            "gu",
+            "mr",
+            "pa",
+            "ur",
+            "vi",
+            "th",
+            "id",
+            "ms",
+            "tl",
+            "sw",
+            "yo",
+            "zu",
+            "tr",
+            "he",
+            "fa",
+            "uk",
+            "pl",
+            "cs",
+            "hu",
+            "ro",
+            "nl",
+            "sv",
+            "no",
+            "da",
+            "fi",
+            "el",
+            "bg",
+            "sr",
+            "hr",
+            "sk",
+            "is"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "OpenAI",
+            "url": "https://openai.com/policies/row-terms-of-use/"
         },
         "model_config": {
             "o1_model": true
@@ -616,12 +662,59 @@
         "open_weight": false,
         "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "es",
+            "fr",
+            "de",
+            "it",
+            "pt",
+            "ru",
+            "zh",
+            "ja",
+            "ko",
+            "ar",
+            "hi",
+            "bn",
+            "te",
+            "ta",
+            "ml",
+            "kn",
+            "gu",
+            "mr",
+            "pa",
+            "ur",
+            "vi",
+            "th",
+            "id",
+            "ms",
+            "tl",
+            "sw",
+            "yo",
+            "zu",
+            "tr",
+            "he",
+            "fa",
+            "uk",
+            "pl",
+            "cs",
+            "hu",
+            "ro",
+            "nl",
+            "sv",
+            "no",
+            "da",
+            "fi",
+            "el",
+            "bg",
+            "sr",
+            "hr",
+            "sk",
+            "is"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "OpenAI",
+            "url": "https://openai.com/policies/row-terms-of-use/"
         },
         "model_config": {
             "o1_model": true
@@ -635,12 +728,59 @@
         "open_weight": false,
         "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "es",
+            "fr",
+            "de",
+            "it",
+            "pt",
+            "ru",
+            "zh",
+            "ja",
+            "ko",
+            "ar",
+            "hi",
+            "bn",
+            "te",
+            "ta",
+            "ml",
+            "kn",
+            "gu",
+            "mr",
+            "pa",
+            "ur",
+            "vi",
+            "th",
+            "id",
+            "ms",
+            "tl",
+            "sw",
+            "yo",
+            "zu",
+            "tr",
+            "he",
+            "fa",
+            "uk",
+            "pl",
+            "cs",
+            "hu",
+            "ro",
+            "nl",
+            "sv",
+            "no",
+            "da",
+            "fi",
+            "el",
+            "bg",
+            "sr",
+            "hr",
+            "sk",
+            "is"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "OpenAI",
+            "url": "https://openai.com/policies/row-terms-of-use/"
         },
         "model_config": {
             "o1_model": true
@@ -652,16 +792,44 @@
         "backend": "openai",
         "release_date": "2024-01-25",
         "open_weight": false,
-        "parameters": "175B",
+        "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "it",
+            "af",
+            "es",
+            "de",
+            "fr",
+            "id",
+            "ru",
+            "pl",
+            "uk",
+            "el",
+            "lv",
+            "zh",
+            "ar",
+            "tr",
+            "ja",
+            "sw",
+            "cy",
+            "ko",
+            "is",
+            "bn",
+            "ur",
+            "ne",
+            "th",
+            "pa",
+            "mr",
+            "te"
         ],
-        "context_size": "",
+        "context_size": "16k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "OpenAI",
+            "url": "https://openai.com/policies/row-terms-of-use/"
         },
-        "model_config": {}
+        "model_config": {
+            "estimated_parameters": "175B"
+        }
     },
     {
         "model_name": "gpt-4-0613",
@@ -669,16 +837,44 @@
         "backend": "openai",
         "release_date": "2023-06-13",
         "open_weight": false,
-        "parameters": "1.76T",
+        "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "it",
+            "af",
+            "es",
+            "de",
+            "fr",
+            "id",
+            "ru",
+            "pl",
+            "uk",
+            "el",
+            "lv",
+            "zh",
+            "ar",
+            "tr",
+            "ja",
+            "sw",
+            "cy",
+            "ko",
+            "is",
+            "bn",
+            "ur",
+            "ne",
+            "th",
+            "pa",
+            "mr",
+            "te"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "OpenAI",
+            "url": "https://openai.com/policies/row-terms-of-use/"
         },
-        "model_config": {}
+        "model_config": {
+            "estimated_parameters": "1.76T"
+        }
     },
     {
         "model_name": "gpt-4-0314",
@@ -686,16 +882,44 @@
         "backend": "openai",
         "release_date": "2023-03-14",
         "open_weight": false,
-        "parameters": "1.76T",
+        "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "it",
+            "af",
+            "es",
+            "de",
+            "fr",
+            "id",
+            "ru",
+            "pl",
+            "uk",
+            "el",
+            "lv",
+            "zh",
+            "ar",
+            "tr",
+            "ja",
+            "sw",
+            "cy",
+            "ko",
+            "is",
+            "bn",
+            "ur",
+            "ne",
+            "th",
+            "pa",
+            "mr",
+            "te"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "OpenAI",
+            "url": "https://openai.com/policies/row-terms-of-use/"
         },
-        "model_config": {}
+        "model_config": {
+            "estimated_parameters": "1.76T"
+        }
     },
     {
         "model_name": "gpt-3.5-turbo-1106",
@@ -703,16 +927,44 @@
         "backend": "openai",
         "release_date": "2023-11-06",
         "open_weight": false,
-        "parameters": "175B",
+        "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "it",
+            "af",
+            "es",
+            "de",
+            "fr",
+            "id",
+            "ru",
+            "pl",
+            "uk",
+            "el",
+            "lv",
+            "zh",
+            "ar",
+            "tr",
+            "ja",
+            "sw",
+            "cy",
+            "ko",
+            "is",
+            "bn",
+            "ur",
+            "ne",
+            "th",
+            "pa",
+            "mr",
+            "te"
         ],
-        "context_size": "",
+        "context_size": "16k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "OpenAI",
+            "url": "https://openai.com/policies/row-terms-of-use/"
         },
-        "model_config": {}
+        "model_config": {
+            "estimated_parameters": "175B"
+        }
     },
     {
         "model_name": "gpt-3.5-turbo-0613",
@@ -720,17 +972,46 @@
         "backend": "openai",
         "release_date": "2023-06-13",
         "open_weight": false,
-        "parameters": "175B",
+        "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "it",
+            "af",
+            "es",
+            "de",
+            "fr",
+            "id",
+            "ru",
+            "pl",
+            "uk",
+            "el",
+            "lv",
+            "zh",
+            "ar",
+            "tr",
+            "ja",
+            "sw",
+            "cy",
+            "ko",
+            "is",
+            "bn",
+            "ur",
+            "ne",
+            "th",
+            "pa",
+            "mr",
+            "te"
         ],
-        "context_size": "",
+        "context_size": "16k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "OpenAI",
+            "url": "https://openai.com/policies/row-terms-of-use/"
         },
-        "model_config": {}
+        "model_config": {
+            "estimated_parameters": "175B"
+        }
     },
+    // §§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§
     {
         "model_name": "mistral-medium-2312",
         "model_id": "mistral-medium-2312",
