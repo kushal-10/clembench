@@ -1011,7 +1011,6 @@
             "estimated_parameters": "175B"
         }
     },
-    // §§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§
     {
         "model_name": "mistral-medium-2312",
         "model_id": "mistral-medium-2312",
@@ -1020,12 +1019,16 @@
         "open_weight": true,
         "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "de",
+            "fr",
+            "it",
+            "es"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Mistral",
+            "url": "https://mistral.ai/licenses/MRL-0.1.md"
         },
         "model_config": {
             "estimated_parameters": "141B"
@@ -1039,12 +1042,16 @@
         "open_weight": true,
         "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "de",
+            "fr",
+            "it",
+            "es"
         ],
-        "context_size": "",
+        "context_size": "32k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Mistral",
+            "url": "https://mistral.ai/licenses/MRL-0.1.md"
         },
         "model_config": {
             "estimated_parameters": "7B"
@@ -1058,12 +1065,16 @@
         "open_weight": true,
         "parameters": "",
         "languages": [
-            "en"
+            "en",
+            "de",
+            "fr",
+            "it",
+            "es"
         ],
-        "context_size": "",
+        "context_size": "32k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Mistral",
+            "url": "https://mistral.ai/licenses/MRL-0.1.md"
         },
         "model_config": {
             "estimated_parameters": "46.7B"
@@ -1077,15 +1088,20 @@
         "open_weight": true,
         "parameters": "123B",
         "languages": [
-            "en"
+            "en",
+            "de",
+            "fr",
+            "it",
+            "es"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Mistral",
+            "url": "https://mistral.ai/licenses/MRL-0.1.md"
         },
         "model_config": {}
     },
+    // §§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§
     {
         "model_name": "command",
         "model_id": "command",
