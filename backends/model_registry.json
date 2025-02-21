@@ -3448,10 +3448,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "32k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "model_class": "transformers.LlavaForConditionalGeneration",
@@ -3484,10 +3484,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "model_class": "transformers.LlavaForConditionalGeneration",
@@ -3520,10 +3520,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "model_class": "transformers.LlavaForConditionalGeneration",
@@ -3556,10 +3556,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE"
         },
         "model_config": {
             "model_class": "transformers.LlavaNextForConditionalGeneration",
@@ -3592,10 +3592,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "32k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Qwen",
+            "url": "https://huggingface.co/llava-hf/llava-next-110b-hf/blob/main/LICENSE"
         },
         "model_config": {
             "model_class": "transformers.LlavaNextForConditionalGeneration",
@@ -3628,10 +3628,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "32k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Qwen",
+            "url": "https://huggingface.co/llava-hf/llava-next-72b-hf/blob/main/LICENSE"
         },
         "model_config": {
             "model_class": "transformers.LlavaNextForConditionalGeneration",
@@ -3664,7 +3664,7 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -3700,7 +3700,7 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "32k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -3736,10 +3736,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "model_class": "transformers.LlavaNextForConditionalGeneration",
@@ -3772,10 +3772,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "model_class": "transformers.LlavaNextForConditionalGeneration",
@@ -3880,10 +3880,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "2k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/HuggingFaceM4/idefics-80b-instruct#license"
         },
         "model_config": {
             "model_class": "transformers.IdeficsForVisionText2Text",
@@ -3915,10 +3915,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "2k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/HuggingFaceM4/idefics-80b-instruct#license"
         },
         "model_config": {
             "model_class": "transformers.IdeficsForVisionText2Text",
@@ -3948,13 +3948,12 @@
         "open_weight": true,
         "parameters": "76B",
         "languages": [
-            "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE"
         },
         "model_config": {
             "model_class": "transformers.AutoModel",
@@ -3992,10 +3991,10 @@
             "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "MIT",
+            "url": "https://choosealicense.com/licenses/mit/"
         },
         "model_config": {
             "model_class": "transformers.AutoModel",
@@ -4033,10 +4032,10 @@
             "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "MIT",
+            "url": "https://choosealicense.com/licenses/mit/"
         },
         "model_config": {
             "model_class": "transformers.AutoModel",
@@ -4074,10 +4073,10 @@
             "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "MIT",
+            "url": "https://choosealicense.com/licenses/mit/"
         },
         "model_config": {
             "model_class": "transformers.AutoModel",
@@ -4115,7 +4114,7 @@
             "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "16k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -4146,7 +4145,7 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -4181,10 +4180,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Qwen",
+            "url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct/blob/main/LICENSE"
         },
         "model_config": {
             "automodel_type": "transformers.AutoModelForCausalLM",
@@ -4212,10 +4211,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "MIT",
+            "url": "https://choosealicense.com/licenses/mit/"
         },
         "model_config": {
             "automodel_type": "transformers.AutoModelForCausalLM",
@@ -4239,9 +4238,9 @@
         "open_weight": true,
         "parameters": "12B",
         "languages": [
-            "en"
+            "en", "fr", "de", "es", "it", "pt", "ru", "zh", "ja"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
