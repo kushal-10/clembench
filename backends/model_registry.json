@@ -1730,7 +1730,6 @@
         },
         "model_config": {}
     },
-                // §§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§
     {
         "model_name": "Mistral-7B-Instruct-v0.1",
         "backend": "huggingface_local",
@@ -1741,7 +1740,7 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -1761,10 +1760,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "premade_chat_template": false,
@@ -1782,10 +1781,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "premade_chat_template": false,
@@ -1908,10 +1907,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "premade_chat_template": false,
@@ -1929,10 +1928,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "premade_chat_template": false,
@@ -1950,10 +1949,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "premade_chat_template": false,
@@ -1971,10 +1970,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "premade_chat_template": false,
@@ -1992,10 +1991,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "premade_chat_template": false,
@@ -2034,10 +2033,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "100k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "premade_chat_template": true,
@@ -2094,7 +2093,7 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2112,9 +2111,9 @@
         "open_weight": true,
         "parameters": "34B",
         "languages": [
-            "en"
+            "en", "zh"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2136,10 +2135,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Deepseek",
+            "url": "https://github.com/deepseek-ai/DeepSeek-LLM/blob/HEAD/LICENSE-MODEL"
         },
         "model_config": {
             "premade_chat_template": true,
@@ -2156,10 +2155,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Deepseek",
+            "url": "https://github.com/deepseek-ai/DeepSeek-LLM/blob/HEAD/LICENSE-MODEL"
         },
         "model_config": {
             "premade_chat_template": true,
@@ -2176,10 +2175,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Ai2",
+            "url": "https://allenai.org/terms/2024-09-25"
         },
         "model_config": {
             "premade_chat_template": false,
@@ -2197,10 +2196,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Ai2",
+            "url": "https://allenai.org/terms/2024-09-25"
         },
         "model_config": {
             "premade_chat_template": false,
@@ -2216,9 +2215,9 @@
         "open_weight": true,
         "parameters": "46.7B",
         "languages": [
-            "en"
+            "en", "fr", "de", "it", "es"
         ],
-        "context_size": "",
+        "context_size": "16k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2236,9 +2235,9 @@
         "open_weight": true,
         "parameters": "34B",
         "languages": [
-            "en"
+            "en", "zh"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2260,10 +2259,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "100k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "premade_chat_template": true,
@@ -2280,7 +2279,7 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2300,7 +2299,7 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2318,9 +2317,9 @@
         "open_weight": true,
         "parameters": "46.7B",
         "languages": [
-            "en"
+            "en", "fr", "de", "it", "es"
         ],
-        "context_size": "",
+        "context_size": "16k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2338,12 +2337,12 @@
         "open_weight": true,
         "parameters": "72B",
         "languages": [
-            "en"
+            "en", "zh"
         ],
-        "context_size": "",
+        "context_size": "32k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Qwen",
+            "url": "https://github.com/QwenLM/Qwen/blob/main/Tongyi%20Qianwen%20LICENSE%20AGREEMENT"
         },
         "model_config": {
             "premade_chat_template": false,
@@ -2359,9 +2358,9 @@
         "open_weight": true,
         "parameters": "34B",
         "languages": [
-            "en"
+            "en", "zh"
         ],
-        "context_size": "",
+        "context_size": "200k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2380,13 +2379,12 @@
         "open_weight": true,
         "parameters": "7B",
         "languages": [
-            "zh",
-            "en"
+            "ar", "es", "fr", "pt", "de", "it", "ru", "ja", "ko", "vi", "th", "id", "en", "zh"
         ],
-        "context_size": "",
+        "context_size": "32k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Qwen",
+            "url": "https://github.com/QwenLM/Qwen/blob/main/Tongyi%20Qianwen%20LICENSE%20AGREEMENT"
         },
         "model_config": {
             "premade_chat_template": true,
@@ -2401,13 +2399,12 @@
         "open_weight": true,
         "parameters": "72B",
         "languages": [
-            "zh",
-            "en"
+            "ar", "es", "fr", "pt", "de", "it", "ru", "ja", "ko", "vi", "th", "id", "en", "zh"
         ],
-        "context_size": "",
+        "context_size": "32k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Qwen",
+            "url": "https://github.com/QwenLM/Qwen/blob/main/Tongyi%20Qianwen%20LICENSE%20AGREEMENT"
         },
         "model_config": {
             "premade_chat_template": true,
@@ -2444,10 +2441,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "MIT",
+            "url": "https://choosealicense.com/licenses/mit/"
         },
         "model_config": {
             "premade_chat_template": true,
@@ -2464,7 +2461,7 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2482,10 +2479,9 @@
         "open_weight": true,
         "parameters": "7B",
         "languages": [
-            "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2503,10 +2499,9 @@
         "open_weight": true,
         "parameters": "72B",
         "languages": [
-            "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2544,12 +2539,13 @@
         "open_weight": true,
         "parameters": "8B",
         "languages": [
-            "en"
+            "en", "fr", "de", "es", "it", "pt", "ja", "ko", "zh", "ar", "el", "fa", 
+            "pl", "id", "cs", "iw", "hi", "nl", "ro", "ru", "tr", "uk", "vi"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "CC-BY-NC",
+            "url": "https://spdx.org/licenses/CC-BY-NC-4.0"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2565,12 +2561,13 @@
         "open_weight": true,
         "parameters": "35B",
         "languages": [
-            "en"
+            "en", "fr", "de", "es", "it", "pt", "ja", "ko", "zh", "ar", "el", "fa", 
+            "pl", "id", "cs", "iw", "hi", "nl", "ro", "ru", "tr", "uk", "vi"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "CC-BY-NC",
+            "url": "https://spdx.org/licenses/CC-BY-NC-4.0"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2588,10 +2585,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Gemma",
+            "url": "https://ai.google.dev/gemma/terms"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2609,10 +2606,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Gemma",
+            "url": "https://ai.google.dev/gemma/terms"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2630,10 +2627,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2651,10 +2648,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2672,10 +2669,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "4k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/blob/main/LICENSE.txt"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2693,10 +2690,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Gemma",
+            "url": "https://ai.google.dev/gemma/terms"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2714,10 +2711,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Gemma",
+            "url": "https://ai.google.dev/gemma/terms"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2735,10 +2732,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Gemma",
+            "url": "https://ai.google.dev/gemma/terms"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2756,10 +2753,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Gemma",
+            "url": "https://ai.google.dev/gemma/terms"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2777,10 +2774,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Gemma",
+            "url": "https://ai.google.dev/gemma/terms"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2798,10 +2795,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Gemma",
+            "url": "https://ai.google.dev/gemma/terms"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2859,12 +2856,12 @@
         "open_weight": true,
         "parameters": "123B",
         "languages": [
-            "en"
+            "en", "fr", "de", "es", "it", "pt", "zh", "ja", "ru", "ko"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Mistral",
+            "url": "https://mistral.ai/news/mistral-ai-non-production-license-mnpl"
         },
         "model_config": {
             "requires_api_key": true,
@@ -2880,10 +2877,9 @@
         "open_weight": true,
         "parameters": "7B",
         "languages": [
-            "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2901,10 +2897,9 @@
         "open_weight": true,
         "parameters": "14B",
         "languages": [
-            "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2922,10 +2917,9 @@
         "open_weight": true,
         "parameters": "32B",
         "languages": [
-            "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2943,10 +2937,9 @@
         "open_weight": true,
         "parameters": "72B",
         "languages": [
-            "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -2964,12 +2957,12 @@
         "open_weight": false,
         "parameters": "1B",
         "languages": [
-            "en"
+            "en", "de", "fr", "it", "pt", "hi", "es", "th"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE"
         },
         "model_config": {
             "premade_chat_template": true,
@@ -2984,12 +2977,12 @@
         "open_weight": false,
         "parameters": "3B",
         "languages": [
-            "en"
+            "en", "de", "fr", "it", "pt", "hi", "es", "th"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE"
         },
         "model_config": {
             "premade_chat_template": true,
@@ -3024,10 +3017,9 @@
         "open_weight": true,
         "parameters": "32B",
         "languages": [
-            "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -3045,10 +3037,9 @@
         "open_weight": true,
         "parameters": "14B",
         "languages": [
-            "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -3066,10 +3057,9 @@
         "open_weight": true,
         "parameters": "7B",
         "languages": [
-            "zh",
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -3087,9 +3077,11 @@
         "open_weight": true,
         "parameters": "7B",
         "languages": [
-            "en"
+            "bg", "ca", "cs", "cy", "da", "de", "el", "en", "es", "et", "eu", "fi", 
+            "fr", "ga", "gl", "hr", "hu", "it", "lt", "lv", "mt", "nl", "nn", "oc", 
+            "pl", "pt", "ro", "ru", "sh", "sk", "sl", "sr", "sv", "uk"
         ],
-        "context_size": "",
+        "context_size": "8k",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -3109,10 +3101,10 @@
         "languages": [
             "en"
         ],
-        "context_size": "",
+        "context_size": "128k",
         "license": {
-            "name": "Apache 2.0",
-            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+            "name": "Meta",
+            "url": "https://huggingface.co/meta-llama/Llama-3.1-70B-Instruct/blob/main/LICENSE"
         },
         "model_config": {
             "premade_chat_template": true,
