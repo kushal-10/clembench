@@ -1,0 +1,139 @@
+# Test long context
+
+from transformers import AutoProcessor, Gemma3ForConditionalGeneration
+from PIL import Image
+import requests
+import torch
+
+model_id = "google/gemma-3-27b-it"
+
+model = Gemma3ForConditionalGeneration.from_pretrained(
+    model_id, device_map="auto"
+).eval()
+
+processor = AutoProcessor.from_pretrained(model_id)
+
+messages = [
+    {
+        "role": "system",
+        "content": [
+            {
+                "type": "text",
+                "text": "You are a helpful assistant."
+            }
+        ]
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "Please help me with the following task. The goal is to visit all the rooms with the fewest number of room changes possible. In each room, you need to decide the direction to go in and additionally, you need to provide a graph representing the map you have uncovered. Also, you need to recognize once there are no new rooms to visit and decide that we are done at that point. Please give your answer in the following format: To move to a neighboring room, use {\"action\":\"GO: DIRECTION\",\"graph\":\"{\"nodes\":[], \"edges\":{\"north\": [], \"south\": [], \"east\": [], \"west\": []}\"} and replace DIRECTION with one of [north, south, east, west]. To stop the exploration, answer with \"DONE\" instead. Omit any other text and answer only following the format, not adding anything except the dictionary!"
+            }
+        ]
+    },
+    {
+        "role": "assistant",
+        "content": [
+            {
+                "type": "text",
+                "text": "Let us start.\n\nYou are in the Music room. Currently available directions: south. What is your next instruction?"
+            }
+        ]
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "{\"action\":\"GO: south\", \"graph\": {\"nodes\":[\"Music room\"],\"edges\":{\"north\":[],\"south\":[],\"east\":[],\"west\":[]}}}"
+            }
+        ]
+    },
+    {
+        "role": "assistant",
+        "content": [
+            {
+                "type": "text",
+                "text": "You have made a step and entered Recreation room. Currently available directions: west, north, south. What is your next instruction?"
+            }
+        ]
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "{\"action\":\"GO: west\", \"graph\": {\"nodes\":[\"Music room\", \"Recreation room\"],\"edges\":{\"north\":[],\"south\":[],\"east\":[],\"west\":[(\"Recreation room\", \"Music room\")]}}}"
+            }
+        ]
+    },
+    {
+        "role": "assistant",
+        "content": [
+            {
+                "type": "text",
+                "text": "You have made a step and entered Closet. Currently available directions: north, east. What is your next instruction?"
+            }
+        ]
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "{\"action\":\"GO: north\", \"graph\": {\"nodes\":[\"Music room\", \"Recreation room\", \"Closet\"],\"edges\":{\"north\":[(\"Closet\", \"Recreation room\")], \"south\":[],\"east\":[],\"west\":[(\"Recreation room\", \"Music room\")]}}}"
+            }
+        ]
+    },
+    {
+        "role": "assistant",
+        "content": [
+            {
+                "type": "text",
+                "text": "You have made a step and entered Mudroom. Currently available directions: west, south. What is your next instruction?"
+            }
+        ]
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "{\"action\":\"GO: west\", \"graph\": {\"nodes\":[\"Music room\", \"Recreation room\", \"Closet\", \"Mudroom\"],\"edges\":{\"north\":[(\"Closet\", \"Recreation room\")], \"south\":[],\"east\":[(\"Mudroom\", \"Closet\")], \"west\":[(\"Recreation room\", \"Music room\")]}}}"
+            }
+        ]
+    },
+    {
+        "role": "assistant",
+        "content": [
+            {
+                "type": "text",
+                "text": "You have made a step and entered Bedroom. Currently available directions: east. What is your next instruction?"
+            }
+        ]
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "{\"action\":\"GO: east\", \"graph\": {\"nodes\":[\"Music room\", \"Recreation room\", \"Closet\", \"Mudroom\", \"Bedroom\"],\"edges\":{\"north\":[(\"Closet\", \"Recreation room\")], \"south\":[],\"east\":[(\"Mudroom\", \"Closet\"), (\"Bedroom\", \"Mudroom\")], \"west\":[(\"Recreation room\", \"Music room\")]}}}"
+            }
+        ]
+    }
+]
+
+inputs = processor.apply_chat_template(
+    messages, add_generation_prompt=True, tokenize=True,
+    return_dict=True, return_tensors="pt"
+).to(model.device, dtype=torch.bfloat16)
+
+input_len = inputs["input_ids"].shape[-1]
+
+with torch.inference_mode():
+    generation = model.generate(**inputs, max_new_tokens=100, do_sample=False)
+    generation = generation[0][input_len:]
+
+decoded = processor.decode(generation, skip_special_tokens=True)
+print(decoded)
