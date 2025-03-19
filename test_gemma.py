@@ -105,18 +105,18 @@ messages = [
         ]
     }, 
     
-    # {'role': 'assistant', 
-    #  'content': [
-    #      {'type': 'text', 
-    #       'text': '{"action":"GO: north", "graph": {"nodes":["Music room", "Recreation room", "Closet", "Mudroom", "Bedroom"],"edges":{"north":[("Closet", "Recreation room"), ("Mudroom", "Bedroom")], "south":[], "east":[("Mudroom", "Closet")], "west":[("Recreation room", "Music room")]}}}'}
-    #     ]
-    # }, 
+    {'role': 'assistant', 
+     'content': [
+         {'type': 'text', 
+          'text': '{"action":"GO: north", "graph": {"nodes":["Music room", "Recreation room", "Closet", "Mudroom", "Bedroom"],"edges":{"north":[("Closet", "Recreation room"), ("Mudroom", "Bedroom")], "south":[], "east":[("Mudroom", "Closet")], "west":[("Recreation room", "Music room")]}}}'}
+        ]
+    }, 
     
-    # {'role': 'user', 
-    #  'content': [
-    #      {'type': 'text', 'text': 'You have made a step and entered Mudroom. Currently available directions: west, south. What is your next instruction?'}
-    #     ]
-    # }
+    {'role': 'user', 
+     'content': [
+         {'type': 'text', 'text': 'You have made a step and entered Mudroom. Currently available directions: west, south. What is your next instruction?'}
+        ]
+    }
 ]
 
 inputs = processor.apply_chat_template(
