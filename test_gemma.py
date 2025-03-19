@@ -17,7 +17,7 @@ messages = [{'role': 'user', 'content': [{'type': 'text', 'text': 'Please help m
 inputs = processor.apply_chat_template(
     messages, add_generation_prompt=True, tokenize=True,
     return_dict=True, return_tensors="pt"
-).to(model.device, dtype=torch.bfloat16)
+).to(model.device, dtype=torch.float16)
 
 input_len = inputs["input_ids"].shape[-1]
 
