@@ -1,0 +1,9 @@
+{
+    "game_name": "escape_room",
+    "description": "In this game an agent is placed on in a mapworld graph and needs to navigate to an escape room based on communications with a Guide Agent outside the world",
+    "main_game": "escaperoom",
+    "players": "two",
+    "image": "single",
+    "languages": ["en"],
+    "benchmark": ["2.0"]
+  }
