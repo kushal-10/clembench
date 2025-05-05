@@ -1,0 +1,49 @@
+{
+    "experiments": [
+        {
+            "name": "test",
+            "game_instances": [
+                {
+                    "game_id": 0,
+                    "nodes": [
+                        "(0, 0)",
+                        "(1, 0)",
+                        "(1, 2)",
+                        "(1, 1)",
+                        "(2, 1)"
+                    ],
+                    "edges": [
+                        "((0, 0), (0, 1))",
+                        "((0, 1), (0, 0))",
+                        "((0, 1), (1, 1))",
+                        "((1, 1), (0, 1))",
+                        "((1, 1), (2, 1))",
+                        "((2, 1), (1, 1))",
+                        "((1, 1), (1, 2))",
+                        "((1, 2), (1, 1))"
+                    ],
+                    "images": {
+                        "(0, 0)": "https://www.ling.uni-potsdam.de/clembench/adk/images/ADE/training/urban/street/ADE_train_00016858.jpg",
+                        "(0, 1)": "https://www.ling.uni-potsdam.de/clembench/adk/images/ADE/training/work_place/reception/ADE_train_00015716.jpg",
+                        "(1, 1)": "https://www.ling.uni-potsdam.de/clembench/adk/images/ADE/training/home_or_hotel/bedroom/ADE_train_00000526.jpg",
+                        "(1, 2)": "https://www.ling.uni-potsdam.de/clembench/adk/images/ADE/training/urban/casino__outdoor/ADE_train_00005212.jpg",
+                        "(2, 1)": "https://www.ling.uni-potsdam.de/clembench/adk/images/ADE/training/home_or_hotel/shower/ADE_train_00016280.jpg"
+                    },
+                    "mapping": {
+                        "(0, 0)": "street",
+                        "(0, 1)": "reception",
+                        "(1, 1)": "bedroom",
+                        "(1, 2)": "casino",
+                        "(2, 1)": "shower"
+                    },
+                    "start": "(0, 0)",
+                    "target": "(1, 2)",
+                    "explorer_prompt": "You are stuck in a mapworld environment. Your task is to explore this world and reach an escape room.\nStart by describing the image given to you that represents the current room you are in.\nYou can also make moves to the following rooms - $ROOMS, here the first part is the room name and the second part is the direction which leads to\nthe room. You are allowed to respond only in the following format.\n\n{\"description\": A one line description of the current room you are in, \"moves\": [list of tuples of possible moves to rooms]}",
+                    "explorer_reprompt": "Now we made a move to this room, and you can move to these rooms $ROOMS, provide the description and moves.",
+                    "guide_prompt": "I need your help, I am stuck in a mapworld environment. Your task is to help me reach an escape room.\nI do not know what the escape room looks like. But fortunately, you have an image of the escape room with you.\nI will explore each room here and give you a description and possible moves in the following format:\n\n{\"description\": A one line description of the current room I am in, \"rooms\": [list of tuples of possible moves to rooms]}\n\nYour task is to compare the description of my room with the image of the room you have been given. Then you have two options\nOption 1) If my description matches the image of the room that you have respond with - {'move': 'escape'} as a string\nOption 2) If my description does not match the image that you have been given, then only respond in the following format \n\n{'move': 'possible_move'}, Here possible_move can be one of the {north, south, east, west}\n\nHere is my initial Description and possible moves :\n$DESCRIPTION\n"
+                }
+            ]
+        }
+    ]
+}
+
