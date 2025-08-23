@@ -20,13 +20,15 @@ from mapworld.engine.utils import get_next_node
 from mapworld.escapegame.scorer import EscapeRoomScorer, is_efficient_move, get_neighbors_str
 
 logger = logging.getLogger(__name__)
-stdout_logger = logging.getLogger("escaperoom.master")
-logging.getLogger("huggingface.multimodal.api").disabled = True
+stdout_logger = logging.getLogger("escapegame.master")
 
-lang_config_path = os.path.join(os.path.dirname(__file__), "resources", "language_config.json")
+# Disable logs from Multimodal backend
+# logging.getLogger("huggingface.multimodal.api").disabled = True
+
+# Language Config file - Handles the text in multiple languages (default - English)
+lang_config_path = os.path.join(os.path.dirname(__file__), "resources", "language_config_en.json")
 with open(lang_config_path) as f:
     LANG_CFG = json.load(f)
-
 
 class Explorer(Player):
     def __init__(self, model: Model):

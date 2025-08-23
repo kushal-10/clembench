@@ -3,9 +3,9 @@ import logging
 
 import numpy as np
 
-from engine.graphs import BaseGraph
-from engine.map_assignments import assign_images, assign_room_categories
-from engine.map_utils import select_random_room, find_distance
+from mapworld.engine.graphs import BaseGraph
+from mapworld.engine.map_assignments import assign_images, assign_room_categories
+from mapworld.engine.map_utils import select_random_room, find_distance
 
 logger = logging.getLogger(__name__)
 

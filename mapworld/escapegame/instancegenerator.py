@@ -32,13 +32,13 @@ class EscapeRoomInstanceGenerator(GameInstanceGenerator):
 
 
     def on_generate(self, seed=None, **kwargs):
-        explorer_prompt = self.load_template(os.path.join(RESOURCES_DIR, "initial_prompts", "explorer.template"))
+        seeker_prompt = self.load_template(os.path.join(RESOURCES_DIR, "initial_prompts", "seeker.template"))
         guide_prompt = self.load_template(os.path.join(RESOURCES_DIR, "initial_prompts", "guide.template"))
-        explorer_reprompt = self.load_template(
-            os.path.join(RESOURCES_DIR, "re_prompts", "explorer_correct_move.template")
+        seeker_reprompt = self.load_template(
+            os.path.join(RESOURCES_DIR, "re_prompts", "seeker_correct_move.template")
         )
-        explorer_fail_reprompt = self.load_template(
-            os.path.join(RESOURCES_DIR, "re_prompts", "explorer_incorrect_move.template")
+        seeker_fail_reprompt = self.load_template(
+            os.path.join(RESOURCES_DIR, "re_prompts", "seeker_incorrect_move.template")
         )
 
         experiments = self.load_json(os.path.join(RESOURCES_DIR, "experiment_config.json"))
@@ -63,10 +63,10 @@ class EscapeRoomInstanceGenerator(GameInstanceGenerator):
                                              ambiguity=ambiguity,
                                              ambiguity_region=ambiguity_region,
                                              distance=distance)
-                map_metadata["explorer_prompt"] = explorer_prompt
+                map_metadata["seeker_prompt"] = seeker_prompt
                 map_metadata["guide_prompt"] = guide_prompt
-                map_metadata["explorer_reprompt"] = explorer_reprompt
-                map_metadata["explorer_failed_reprompt"] = explorer_fail_reprompt
+                map_metadata["seeker_reprompt"] = seeker_reprompt
+                map_metadata["seeker_failed_reprompt"] = seeker_fail_reprompt
 
                 escape_room_instance = self.add_game_instance(experiment, game_id)
 
