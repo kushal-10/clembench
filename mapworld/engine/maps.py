@@ -254,9 +254,10 @@ class BaseMap(BaseGraph):
             "named_edges": named_edges,
             "unnamed_edges": unnamed_edges,
             "node_to_category": node_to_category,
-            "category_to_node": category_to_node,
+            # TODO: Handle ambiguous categories (e.g. - Reception -> Reception1, Reception2)
+            # "category_to_node": category_to_node,
             "node_to_image": node_to_image,
-            "category_to_image": category_to_image,
+            # "category_to_image": category_to_image,
             "start_node": str(start_pos),
             "target_node": str(target_pos),
         }

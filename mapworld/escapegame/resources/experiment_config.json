@@ -120,17 +120,6 @@
         "end_type": "ambiguous",
         "ambiguity_region": "indoor"
       },
-  "star":
-      {
-        "size": 10,
-        "rooms":8,
-        "type": "star",
-        "ambiguity": [2],
-        "distance": 2,
-        "start_type": "random",
-        "end_type": "outdoor",
-        "ambiguity_region": "random"
-      },
   "tree":
       {
         "size": 10,
