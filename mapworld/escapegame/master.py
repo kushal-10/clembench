@@ -56,16 +56,13 @@ class Guide(Player):
 
 class EscapeRoom(DialogueGameMaster):
 
-    def __init__(self, name: str, path: str, experiment: Dict, player_models: List[Model]):
-        super().__init__(name, path, experiment, player_models)
-
-        # Initialize Experiment/Prompts/Scorer flags
-        self.experiment: str = experiment["name"]
+    def __init__(self, game_spec: GameSpec, experiment: Dict, player_models: List[Model]):
+        super().__init__(game_spec, experiment, player_models)
 
         # Scorers
         self.aborted = False
         self.fail = False  # Set when Explorer returns any invalid move
-        self.success = False  # Set when Explorer returns - ESCAPE and explorer location == target location
+        self.success = False  # Set when Explorer returns - ESCAPE and seeker location == target location
         self.reprompt_fail = False  # Set when Explorer returns a move to an invalid room
 
         # Pass Turn
@@ -79,33 +76,33 @@ class EscapeRoom(DialogueGameMaster):
         self.game_map = MapWorldEnv(render_mode="rgb_array", size=self.m, map_metadata=self.game_instance)
 
         # Prompts
-        self.explorer_base_prompt: str = self.game_instance["explorer_prompt"]
-        self.explorer_base_reprompt: str = self.game_instance["explorer_reprompt"]
-        self.explorer_base_failed_reprompt: str = self.game_instance["explorer_failed_reprompt"]
+        self.seeker_base_prompt: str = self.game_instance["seeker_prompt"]
+        self.seeker_base_reprompt: str = self.game_instance["seeker_reprompt"]
+        self.seeker_base_failed_reprompt: str = self.game_instance["seeker_failed_reprompt"]
         self.guide_prompt: str = self.game_instance["guide_prompt"]
 
         # Initialize Players
         # Player 1 (Explorer) is in the mapworld
         # Player 2 (Guide) is outside the world
-        self.explorer = Explorer(self.player_models[0])
+        self.seeker = Explorer(self.player_models[0])
         self.guide = Guide(self.player_models[1])
 
         # Setup for Explorer/Player1
-        self.explorer_pos = self.game_instance["start_node"]
-        self.explorer_image = self.game_instance["node_to_image"][self.explorer_pos]
+        self.seeker_pos = self.game_instance["start_node"]
+        self.seeker_image = self.game_instance["node_to_image"][self.seeker_pos]
         # Keep the nodes and edges as str in master (straightforward mapping) but pass as Tuples to the mapworld engine
 
-        self.max_explorer_retries = 1  # At max, Let the explorer make 1 wrong move continuously from the same room
-        self.current_explorer_try = 0  # reset try after every explorer move (to another room)
-        self.total_explorer_moves = 0  # log all explorer moves valid+invalid here.
+        self.max_seeker_retries = 1  # At max, Let the seeker make 1 wrong move continuously from the same room
+        self.current_seeker_try = 0  # reset try after every seeker move (to another room)
+        self.total_seeker_moves = 0  # log all seeker moves valid+invalid here.
         # Check against a max value for aborting
 
         # Name of the room category - bedroom, for example
-        self.explorer_room = self.game_instance["node_to_category"][self.explorer_pos]
+        self.seeker_room = self.game_instance["node_to_category"][self.seeker_pos]
         self.initial_description_tag = LANG_CFG["initial_description_tag"]
         self.directions_tag = LANG_CFG["directions_tag"]
 
-        self.explorer_target = self.game_instance["target_node"]
+        self.seeker_target = self.game_instance["target_node"]
 
         # Setup for Guide/Player2
         self.escape_pos = self.game_instance["target_node"]
@@ -115,9 +112,9 @@ class EscapeRoom(DialogueGameMaster):
         # Add players
         # NOTE: Player calls will be made in the order below
         self.add_player(self.guide)
-        self.add_player(self.explorer)
+        self.add_player(self.seeker)
 
-        # Question Flag to keep track of - when explorer asks the questions, and if guide responds with answer
+        # Question Flag to keep track of - when seeker asks the questions, and if guide responds with answer
         self.question_flag = 0
 
     def _on_before_game(self):
@@ -172,7 +169,7 @@ class EscapeRoom(DialogueGameMaster):
             self.aborted = True
             stdout_logger.info(f"Aborting the Game. Could not parse response from Player.")
             stdout_logger.info(f"Invalid utterance: {utterance}")
-            self.log_to_self("invalid value", "abort game: explorer")
+            self.log_to_self("invalid value", "abort game: seeker")
             return False
 
         if type(player) == Explorer:
@@ -183,7 +180,7 @@ class EscapeRoom(DialogueGameMaster):
             3) QUESTION: 
             Check for each tag
 
-            Abort - If explorer responds in invalid format, or invalid keys
+            Abort - If seeker responds in invalid format, or invalid keys
             """
             valid_tags = ["move", "escape", "question"]
             valid_directions = ["north", "east", "south", "west"]
@@ -197,15 +194,15 @@ class EscapeRoom(DialogueGameMaster):
                 self.aborted = True
                 stdout_logger.info(f"Aborting the Game. Explorer generated invalid tag {tag}")
                 stdout_logger.info(f"Invalid utterance: {utterance}")
-                self.log_to_self("invalid value", "abort game: explorer")
+                self.log_to_self("invalid value", "abort game: seeker")
                 return False
 
             if tag == "move":
-                self.total_explorer_moves += 1
-                stdout_logger.info(f"Current explorer move: {self.total_explorer_moves}")
-                if self.total_explorer_moves >= 14:
+                self.total_seeker_moves += 1
+                stdout_logger.info(f"Current seeker move: {self.total_seeker_moves}")
+                if self.total_seeker_moves >= 14:
                     self.fail = True
-                    self.log_to_self("turns exceeded", "failed game: explorer")
+                    self.log_to_self("turns exceeded", "failed game: seeker")
 
                 stdout_logger.info(f"Move made from location - {self.game_map._agent_location}")
                 move = splits[1]
@@ -216,7 +213,7 @@ class EscapeRoom(DialogueGameMaster):
                     self.aborted = True
                     stdout_logger.info(f"Aborting the Game. Explorer generated invalid move {move}")
                     stdout_logger.info(f"Invalid utterance: {utterance}")
-                    self.log_to_self("invalid value", "abort game: explorer")
+                    self.log_to_self("invalid value", "abort game: seeker")
                     return False
 
                 next_node = get_next_node(tuple(self.game_map._agent_location), move)
@@ -235,15 +232,15 @@ class EscapeRoom(DialogueGameMaster):
                     stdout_logger.info(f"Invalid move from {current_node} to {next_node_str}")
                     self.log_to_self("move", "invalid")
                     self.reprompt_fail = True
-                    self.current_explorer_try += 1
+                    self.current_seeker_try += 1
                     invalid_move = True
-                    if self.current_explorer_try == self.max_explorer_retries:
+                    if self.current_seeker_try == self.max_seeker_retries:
                         self.fail = True
-                        self.log_to_self("turns exceeded", "failed game: explorer")
+                        self.log_to_self("turns exceeded", "failed game: seeker")
                 else:
                     stdout_logger.info(f"Valid move: {move}")
                     # self.log_to_self("move", "valid")
-                    self.current_explorer_try = 0  # Reset explorer tries
+                    self.current_seeker_try = 0  # Reset seeker tries
 
                 edges = self.game_map.map_metadata["unnamed_edges"]
                 tuple_edges = []
@@ -283,7 +280,7 @@ class EscapeRoom(DialogueGameMaster):
                 self.question_flag = 1
                 self.pass_turn = True
                 stdout_logger.info(f"Explorer asked Question - {utterance}")
-                self.log_to_self("question", "explorer")
+                self.log_to_self("question", "seeker")
                 return True
 
         else:
@@ -329,6 +326,12 @@ class EscapeRoom(DialogueGameMaster):
                     self.log_to_self("answer", "guide")
                 return True
 
+    def compute_turn_score(self):
+        pass
+
+    def compute_episode_score(self):
+        pass
+
     def _parse_response(self, player: Union[Explorer, Guide], utterance: str) -> str:
         """
         Modify the response from Guide and send it to the Explorer
@@ -340,51 +343,51 @@ class EscapeRoom(DialogueGameMaster):
         """
         # TODO: If player is guide - pass the reprompt version with rooms to Guide - Do this in parse resp
         # FIXME: Does not seem to be required, Is the utterance stored before or after this call
-        # FIXME: If after, then the utterance can be overridden here as reprompt for explorer
+        # FIXME: If after, then the utterance can be overridden here as reprompt for seeker
         # if type(player) == Explorer:
         #     # Return utterance as is, and forward to Guide
         #     return utterance
         # elif type(player) == Guide:
         #     move_dict = ast.literal_eval(utterance)
         #     move = move_dict['move']
-        #     self.explorer_image = get_next_image(self.game_instance, self.explorer_pos, move)
-        #     next_node = get_node(ast.literal_eval(self.explorer_pos), move)
+        #     self.seeker_image = get_next_image(self.game_instance, self.seeker_pos, move)
+        #     next_node = get_node(ast.literal_eval(self.seeker_pos), move)
         #     next_moves = get_next_moves(self.game_instance, next_node)
-        #     self.explorer_reprompt = self.explorer_reprompt.replace("$ROOMS", next_moves)
+        #     self.seeker_reprompt = self.seeker_reprompt.replace("$ROOMS", next_moves)
         return utterance
 
-    def _on_valid_player_response(self, player: Union[Explorer, Guide], utterance: str):
+    def _advance_game(self, player: Union[Explorer, Guide], parsed_response: str):
         """
         Send Explorer's response to Guide and vice versa
 
         Args:
             player: Player object - Explorer or Guide type
-            utterance: str - response from current Player
+            parsed_response: str - response from current Player
         """
 
-        # First explorer turn is done, the response from explorer always goes into guide, unchanged
-        # The guide response never goes into the Explorer, rather the reprompt of explorer is fixed
+        # First seeker turn is done, the response from seeker always goes into guide, unchanged
+        # The guide response never goes into the Explorer, rather the reprompt of seeker is fixed
         # and the next possible moves are interpreted based on the guide's response
         stdout_logger.info(f"Current Round index: {self.current_round}. Current player: {player}")
-        utterance = self.clean_agent_response(utterance)
+        utterance = self.clean_agent_response(parsed_response)
 
         if type(player) == Guide:
             if self.current_round == 0:  # First prompt to Explorer from Guide.
                 moves = self.game_map.get_next_moves()
-                self.explorer_prompt = self.explorer_base_prompt.replace(self.initial_description_tag, utterance)
-                self.explorer_prompt = self.explorer_prompt.replace(self.directions_tag, moves)
-                stdout_logger.info(f"First prompt for Explorer: {self.explorer_prompt}")
-                stdout_logger.info(f"Image for Explorer: {self.explorer_image}")
+                self.seeker_prompt = self.seeker_base_prompt.replace(self.initial_description_tag, utterance)
+                self.seeker_prompt = self.seeker_prompt.replace(self.directions_tag, moves)
+                stdout_logger.info(f"First prompt for Explorer: {self.seeker_prompt}")
+                stdout_logger.info(f"Image for Explorer: {self.seeker_image}")
                 # Pass the response from Guide to Explorer
-                self.set_context_for(self.explorer, self.explorer_prompt, image=[self.explorer_image])
-                self.log_to_self("image", {"image": [self.explorer_image]})
+                self.set_context_for(self.seeker, self.seeker_prompt, image=[self.seeker_image])
+                self.log_to_self("image", {"image": [self.seeker_image]})
             else:
                 # Pass the response from Guide as is, This should only contain "ANSWER:...."
                 # DESCRIPTION: ... is only for the first turn
                 stdout_logger.info(f"Set Prompt for Explorer: {utterance}")
-                stdout_logger.info(f"Image for Explorer: {self.explorer_image}")
-                self.set_context_for(self.explorer, utterance, image=[self.explorer_image])
-                self.log_to_self("image", {"image": [self.explorer_image]})
+                stdout_logger.info(f"Image for Explorer: {self.seeker_image}")
+                self.set_context_for(self.seeker, utterance, image=[self.seeker_image])
+                self.log_to_self("image", {"image": [self.seeker_image]})
         else:
             utterance = utterance.lower()
             splits = utterance.split(":")
@@ -395,29 +398,29 @@ class EscapeRoom(DialogueGameMaster):
                     # Skip updating environment, pass same image,moves, but different reprompt
                     next_moves = self.game_map.get_next_moves()  # Update next possible moves
                     stdout_logger.info(f"Next Moves: {next_moves}")
-                    self.explorer_failed_reprompt = self.explorer_base_failed_reprompt.replace(self.directions_tag,
+                    self.seeker_failed_reprompt = self.seeker_base_failed_reprompt.replace(self.directions_tag,
                                                                                                next_moves)
-                    self.set_context_for(self.explorer, self.explorer_failed_reprompt,
-                                         image=[self.explorer_image])  # Pass the updated str
-                    self.log_to_self("image", {"image": [self.explorer_image]})
-                    stdout_logger.info(f"Reprompt Explorer: {self.explorer_failed_reprompt}")
-                    stdout_logger.info(f"Image for Explorer: {self.explorer_image}")
+                    self.set_context_for(self.seeker, self.seeker_failed_reprompt,
+                                         image=[self.seeker_image])  # Pass the updated str
+                    self.log_to_self("image", {"image": [self.seeker_image]})
+                    stdout_logger.info(f"Reprompt Explorer: {self.seeker_failed_reprompt}")
+                    stdout_logger.info(f"Image for Explorer: {self.seeker_image}")
                     stdout_logger.info(f"Resetting reprompt_fail flag")
                     self.reprompt_fail = False
                 else:
                     move = splits[1].strip().lower()
-                    explorer_action = self.game_map._move_to_action[move]
-                    self.game_map.step(explorer_action)  # Update Explorer state
-                    # Update explorer image
-                    self.explorer_image = self.game_instance["node_to_image"][str(tuple(self.game_map._agent_location))]
+                    seeker_action = self.game_map._move_to_action[move]
+                    self.game_map.step(seeker_action)  # Update Explorer state
+                    # Update seeker image
+                    self.seeker_image = self.game_instance["node_to_image"][str(tuple(self.game_map._agent_location))]
                     next_moves = self.game_map.get_next_moves()  # Update next possible moves
                     stdout_logger.info(f"Next Moves: {next_moves}")
-                    self.explorer_reprompt = self.explorer_base_reprompt.replace(self.directions_tag, next_moves)
+                    self.seeker_reprompt = self.seeker_base_reprompt.replace(self.directions_tag, next_moves)
                     # Pass the updated str
-                    self.set_context_for(self.explorer, self.explorer_reprompt, image=[self.explorer_image])
-                    self.log_to_self("image", {"image": [self.explorer_image]})
-                    stdout_logger.info(f"Reprompt Explorer: {self.explorer_reprompt}")
-                    stdout_logger.info(f"Image for Explorer: {self.explorer_image}")
+                    self.set_context_for(self.seeker, self.seeker_reprompt, image=[self.seeker_image])
+                    self.log_to_self("image", {"image": [self.seeker_image]})
+                    stdout_logger.info(f"Reprompt Explorer: {self.seeker_reprompt}")
+                    stdout_logger.info(f"Image for Explorer: {self.seeker_image}")
             if tag == "question":
                 self.set_context_for(self.guide, utterance, image=[self.guide_image])
                 self.log_to_self("image", {"image": [self.guide_image]})
@@ -432,11 +435,11 @@ class EscapeRoom(DialogueGameMaster):
 class EscapeRoomBenchmark(GameBenchmark):
     """Integrate this game in the overall benchmark runs"""
 
-    def __init__(self, game_spec: GameSpec):
+    def __init__(self,  game_spec: GameSpec):
         super().__init__(game_spec)
 
     def create_game_master(self, experiment: Dict, player_models: List[Model]) -> GameMaster:
-        return EscapeRoom(self.game_name, self.game_path, experiment, player_models)
+        return EscapeRoom(self.game_spec, experiment=experiment, player_models=player_models)
 
-    def create_game_scorer(self, experiment: Dict, game_instance: Dict) -> GameScorer:
-        return EscapeRoomScorer(self.game_name, experiment, game_instance)
+    def create_game_scorer(self, game_spec: GameSpec, experiment: Dict, game_instance: Dict) -> GameScorer:
+        return EscapeRoomScorer(game_spec.game_name, experiment, game_instance)
