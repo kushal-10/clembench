@@ -43,3 +43,7 @@ if __name__ == "__main__":
 
     json_path = os.path.join("mapworld", "escapegame", "in", "instances.json")
     create_test(json_path)
+
+    json_path_local = os.path.join("mapworld", "escapegame", "in", "instances_local.json")
+    if os.path.exists(json_path_local):
+        create_test(json_path_local)

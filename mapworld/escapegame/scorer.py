@@ -246,12 +246,10 @@ class EscapeRoomScorer(GameScorer):
 
         exp_name = episode_interactions['meta']["experiment_name"]
         game_id = episode_interactions['meta']["game_id"]
-        instance_file = os.path.join("escaperoom", "in", "instances.json")
+        instance_file = os.path.join("mapworld", "escapegame", "in", "instances.json")
         with open(instance_file, "r") as f:
             instances = json.load(f)
 
-        model_name = episode_interactions['meta']["dialogue_pair"]
-        # print(f"Computing scores for {model_name}")
         if exp_name in min_q_mapping:
             min_q = min_q_mapping[exp_name]
         else:
@@ -294,9 +292,9 @@ class EscapeRoomScorer(GameScorer):
 
 
             # log turn request scores
-            self.log_turn_score(turn_idx, ms.METRIC_REQUEST_COUNT_VIOLATED, turn_score_dict["violated_request_count"])
-            self.log_turn_score(turn_idx, ms.METRIC_REQUEST_COUNT_PARSED, turn_score_dict["parsed_request_count"])
-            self.log_turn_score(turn_idx, ms.METRIC_REQUEST_COUNT, turn_score_dict["request_count"])
+            self.log_round_score(turn_idx, ms.METRIC_REQUEST_COUNT_VIOLATED, turn_score_dict["violated_request_count"])
+            self.log_round_score(turn_idx, ms.METRIC_REQUEST_COUNT_PARSED, turn_score_dict["parsed_request_count"])
+            self.log_round_score(turn_idx, ms.METRIC_REQUEST_COUNT, turn_score_dict["request_count"])
             all_turn_scores.append(turn_score_dict)
 
         last_turn = episode_interactions["turns"][-1][-1]
