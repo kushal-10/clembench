@@ -353,8 +353,6 @@ class EscapeRoom(DialogueGameMaster):
                 stdout_logger.info(f"Image for Seeker: {self.seeker_image}")
                 # Pass the response from Guide to Seeker
                 self.set_context_for(self.seeker, self.seeker_prompt, image=[self.seeker_image])
-                
-                self.current_round += 1 # Use ony Guide turn for round 0, then seeker start from round 1
             else:
                 # Pass the response from Guide as is, This should only contain "ANSWER:...."
                 # DESCRIPTION: ... is only for the first turn
