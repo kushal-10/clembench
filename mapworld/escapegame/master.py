@@ -125,7 +125,7 @@ class EscapeRoom(DialogueGameMaster):
 
         # Add initial prompt to Seeker in (Seeker's) history
         self.set_context_for(self.guide, self.guide_prompt, image=[self.guide_image])
-        self.log_to_self("image", {"image": [self.guide_image]})
+        
         stdout_logger.info(f"First message for Guide: {self.guide_prompt}")
         stdout_logger.info(f"First Room image path for Guide: {self.guide_image}")
 
@@ -353,14 +353,15 @@ class EscapeRoom(DialogueGameMaster):
                 stdout_logger.info(f"Image for Seeker: {self.seeker_image}")
                 # Pass the response from Guide to Seeker
                 self.set_context_for(self.seeker, self.seeker_prompt, image=[self.seeker_image])
-                self.log_to_self("image", {"image": [self.seeker_image]})
+                
+                self.current_round += 1 # Use ony Guide turn for round 0, then seeker start from round 1
             else:
                 # Pass the response from Guide as is, This should only contain "ANSWER:...."
                 # DESCRIPTION: ... is only for the first turn
                 stdout_logger.info(f"Set Prompt for Seeker: {utterance}")
                 stdout_logger.info(f"Image for Seeker: {self.seeker_image}")
                 self.set_context_for(self.seeker, utterance, image=[self.seeker_image])
-                self.log_to_self("image", {"image": [self.seeker_image]})
+                
         else:
             utterance = utterance.lower()
             splits = utterance.split(":")
@@ -375,7 +376,7 @@ class EscapeRoom(DialogueGameMaster):
                                                                                                next_moves)
                     self.set_context_for(self.seeker, self.seeker_failed_reprompt,
                                          image=[self.seeker_image])  # Pass the updated str
-                    self.log_to_self("image", {"image": [self.seeker_image]})
+                    
                     stdout_logger.info(f"Reprompt Seeker: {self.seeker_failed_reprompt}")
                     stdout_logger.info(f"Image for Seeker: {self.seeker_image}")
                     stdout_logger.info(f"Resetting reprompt_fail flag")
@@ -391,12 +392,12 @@ class EscapeRoom(DialogueGameMaster):
                     self.seeker_reprompt = self.seeker_base_reprompt.replace(self.directions_tag, next_moves)
                     # Pass the updated str
                     self.set_context_for(self.seeker, self.seeker_reprompt, image=[self.seeker_image])
-                    self.log_to_self("image", {"image": [self.seeker_image]})
+                    
                     stdout_logger.info(f"Reprompt Seeker: {self.seeker_reprompt}")
                     stdout_logger.info(f"Image for Seeker: {self.seeker_image}")
             if tag == "question":
                 self.set_context_for(self.guide, utterance, image=[self.guide_image])
-                self.log_to_self("image", {"image": [self.guide_image]})
+                
                 stdout_logger.info(f"Set Prompt for Guide: {utterance}")
                 stdout_logger.info(f"Image for Guide: {self.guide_image}")
 
