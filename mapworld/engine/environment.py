@@ -5,12 +5,15 @@ from typing import Dict, Tuple
 import ast
 import os
 import logging
+from datetime import datetime
+import imageio.v2 as imageio
 from pathlib import Path
 
 import gymnasium as gym
 from gymnasium import spaces
 import pygame
 import numpy as np
+
 
 from mapworld.engine.map_utils import load_json
 
@@ -101,6 +104,7 @@ class MapWorldEnv(gym.Env):
         """
         self.window = None
         self.clock = None
+        self._frames = []
 
 
     def _get_obs(self):
@@ -119,8 +123,8 @@ class MapWorldEnv(gym.Env):
         observation = self._get_obs()
         info = self._get_info()
 
-        if self.render_mode == "human":
-            self._render_frame()
+        self._frames = []
+        self._render_frame()
 
         return observation, info
 
@@ -236,7 +240,6 @@ class MapWorldEnv(gym.Env):
 
         pygame.draw.line(canvas, color, start_pos, end_pos, width=1)
 
-
     def _render_frame(self):
         if self.window is None and self.render_mode == "human":
             pygame.init()
@@ -249,43 +252,41 @@ class MapWorldEnv(gym.Env):
 
         canvas = pygame.Surface((self.window_size, self.window_size))
         canvas.fill((255, 255, 255))
-        pix_square_size = int(
-            self.window_size / self.size
-        )  # The size of a single grid square in pixels
-        room_ratio = 0.6 # Ratio of a visible room pixel wrt pix_square_size
+        pix_square_size = int(self.window_size / self.size)
+        room_ratio = 0.6
 
         # Draw edges
         for edge in self.map_metadata["unnamed_edges"]:
             self._draw_line(canvas, (0, 0, 0), edge, pix_square_size, room_ratio)
 
-        # Draw Pieces
+        # Draw rooms
         for node in self.map_metadata["unnamed_nodes"]:
-            self._draw_rect(canvas, (255,0,0), self._to_xy(node), pix_square_size,
-                            room_ratio, self.map_metadata["node_to_category"][node])
+            self._draw_rect(
+                canvas, (255, 0, 0), self._to_xy(node),
+                pix_square_size, room_ratio, self.map_metadata["node_to_category"][node]
+            )
 
-        # Now we draw the agent
+        # Robot sprite
         self.robot_img = pygame.image.load(robot_image).convert_alpha()
-        # scale it to cell size
         self.robot_img = pygame.transform.smoothscale(
-            self.robot_img, (room_ratio*pix_square_size, room_ratio*pix_square_size)
+            self.robot_img, (int(room_ratio * pix_square_size), int(room_ratio * pix_square_size))
         )
+        canvas.blit(self.robot_img, self._agent_location * pix_square_size + 0.2 * pix_square_size)
 
-        # draw the robot
-        canvas.blit(self.robot_img, self._agent_location*pix_square_size + 0.2*pix_square_size)
-
-        self.window.blit(canvas, (0, 0))
-        pygame.display.flip()
+        # --- capture a frame for GIFs (HxWx3 uint8) ---
+        frame = np.transpose(np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2)).copy()
+        self._frames.append(frame)
 
         if self.render_mode == "human":
-            # The following line copies our drawings from `canvas` to the visible window
-            self.window.blit(canvas, canvas.get_rect())
+            self.window.blit(canvas, (0, 0))
             pygame.event.pump()
             pygame.display.update()
             self.clock.tick(self.metadata["render_fps"])
+            # also return frame so caller can inspect if desired
+            return frame
         else:  # rgb_array
-            return np.transpose(
-                np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2)
-            )
+            return frame
+
 
     @staticmethod
     def _get_direction(start_pos: Tuple, next_pos: Tuple) -> str:
@@ -370,6 +371,42 @@ class MapWorldEnv(gym.Env):
             pygame.display.quit()
             pygame.quit()
 
+    def record_video(self, out_path: str | None = None, fps: int = 2, loop: int = 0):
+        """
+        Save all buffered frames (captured during render calls) as a GIF.
+
+        Args:
+            out_path: destination .gif path. If None, saves under
+                      mapworld/engine/resources/gifs/<timestamp>.gif
+            fps: frames per second for the GIF
+            loop: 0=infinite loop, or number of loops
+
+        Returns:
+            out_path (str): full path to the saved GIF
+        """
+        if not self._frames:
+            raise RuntimeError("No frames recorded. Call env.render() during your episode first.")
+
+        # default path
+        if out_path is None:
+            gifs_dir = RESOURCES_DIR / "gifs"
+            gifs_dir.mkdir(parents=True, exist_ok=True)
+            stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            out_path = gifs_dir / f"episode_{stamp}.gif"
+        else:
+            out_dir = Path(out_path).parent
+            out_dir.mkdir(parents=True, exist_ok=True)
+
+        duration = 2.0 / max(1, fps)  # seconds per frame
+        imageio.mimsave(
+            str(out_path),
+            self._frames,
+            format="GIF",
+            duration=duration,
+            loop=loop,
+        )
+        return str(out_path)
+
 
 if __name__ == '__main__':
 
@@ -378,10 +415,13 @@ if __name__ == '__main__':
     env.reset()
     env.render()
 
-    moves = [0,0,0,3,2,2,2,1,0,0,0,3,2,2,2,1,0,0,0,3,2,2,2,1]
+    moves = [0, 0, 0, 3, 2, 2, 2, 1]
+    for a in moves:
+        env.render()  # <- buffers a frame each time
+        env.step(a)
 
-    for i in moves:
-        env.render()
-        env.step(i)
+    # Save GIF under mapworld/engine/resources/gifs/
+    gif_path = env.record_video()  # or env.record_video("mapworld/engine/resources/gifs/run.gif", fps=4)
+    print("Saved:", gif_path)
 
     env.close()
