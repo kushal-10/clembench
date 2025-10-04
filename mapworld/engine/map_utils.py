@@ -2,9 +2,10 @@
 Utils module to handle room type/image assignments to Graphs
 """
 import json
-import numpy as np
 from typing import Tuple, Dict, List
 from collections import deque, defaultdict
+
+import numpy as np
 
 class MapConfigError(Exception):
     """Base class for all map config errors."""
@@ -19,7 +20,6 @@ class NodesExhaustedError(MapConfigError):
                f"\nSet another start/end type, set another ambiguity region "
                f"or reduce ambiguity for the selected graph type.")
         super().__init__(msg)
-
 
 
 def load_json(json_path: str):
